@@ -1,0 +1,132 @@
+
+.about-container {
+  max-width: 900px;
+  margin: 2rem auto;
+  padding: 2rem 1rem;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  color: #333;
+ background: linear-gradient(#aaeda8, #d3f17e);
+
+  border-radius: 12px;
+  box-shadow: 0 0 20px rgba(46, 125, 50, 0.15);
+}
+
+.about-title {
+  font-size: 2.8rem;
+  font-weight: 700;
+  color: #2e7d32;
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.about-intro,
+.about-mission p {
+  font-size: 1.25rem;
+  line-height: 1.6;
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.about-mission h2,
+.about-values h2,
+.about-founder h2 {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+  color: #2e7d32;
+  text-align: center;
+}
+
+.about-values .values-grid {
+  display: flex;
+  justify-content: space-around;
+  gap: 2rem;
+  margin-top: 1rem;
+  flex-wrap: wrap;
+}
+
+.value-card {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(46, 125, 50, 0.1);
+  text-align: center;
+  flex: 1 1 250px;
+  transition: transform 0.3s ease;
+  cursor: default;
+}
+
+.value-card:hover {
+  transform: translateY(-10px);
+}
+
+.value-icon {
+  color: #2e7d32;
+  font-size: 3rem;
+  margin-bottom: 0.5rem;
+}
+
+.value-card h3 {
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.about-founder .founder-profile {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  margin-top: 1rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.founder-img {
+  border-radius: 50%;
+  width: 160px;
+  height: 160px;
+  object-fit: cover;
+  box-shadow: 0 0 15px rgba(46, 125, 50, 0.3);
+}
+
+.founder-info {
+  max-width: 500px;
+}
+
+.founder-info h3 {
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  color: #2e7d32;
+}
+
+.founder-info p {
+  font-size: 1.1rem;
+  line-height: 1.5;
+  color: #444;
+}
+.about-social {
+  margin-top: 3rem;
+  text-align: center;
+  color: #2e7d32;
+}
+
+.about-social h2 {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+}
+
+.about-social p {
+  font-size: 1.1rem;
+  margin-bottom: 1.5rem;
+  color: #444;
+}
+
+.social-icons {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  font-size: 2.5rem;
+}
+
+.social-icons a {
+  color: #2e7d32;
+  transition: color 0.3s ease;
+}

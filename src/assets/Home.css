@@ -1,0 +1,94 @@
+.back{
+    background-color:rgba(42, 239, 52, 0.10) ;
+    margin-top: 120px;
+}
+
+.home-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-image: url("../assets/images/bgimg.webp");
+  background-size: cover;
+  padding: 2rem;
+  text-align: center;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  
+}
+.img {
+  margin-top: -130px;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  background-color: rgba(255, 255, 255, 0.1);
+  width: 90%;           /* Default width on very small screens */
+  max-width: 280px;     /* Maximum width limit */
+  height: auto;
+  border-radius: 20px;
+  z-index: 1;
+}
+
+/* Small devices (landscape phones, 576px and up) */
+@media (min-width: 576px) {
+  .img {
+    width: 70%;
+    margin-top: -100px;
+  }
+}
+
+/* Medium devices (tablets, 768px and up) */
+@media (min-width: 768px) {
+  .img {
+    width: 50%;
+    margin-top: -80px;
+  }
+}
+
+/* Large devices (desktops, 992px and up) */
+@media (min-width: 992px) {
+  .img {
+    width: 350px;       /* Fixed size for desktops */
+    margin-top: -130px;
+    margin-left: 0;
+    margin-right: 1200px; /* Optional if you want to keep big margin on large */
+  }
+}
+
+/* Extra large devices (large desktops, 1200px and up) */
+@media (min-width: 1200px) {
+  .img {
+    width: 280px;       /* Or adjust as you like */
+    margin-right: 1200px;
+  }
+}
+
+.home-title {
+  font-size: 3rem;
+  color: #ffffff; /* Dark green */
+  font-weight: bold;
+  margin-bottom: 1rem;
+}
+
+.home-description {
+  font-size: 1.2rem;
+  color: #ffffff;
+  max-width: 600px;
+  margin: 0 auto 2rem auto;
+}
+
+.shop-button {
+ 
+  border: none;
+  padding: 1rem 2rem;
+  border-radius: 12px;
+  font-size: 1rem;
+  cursor: pointer;
+  outline: none;
+  color: white;
+  background-color: #2e7d32;
+}
+
+
+
+
