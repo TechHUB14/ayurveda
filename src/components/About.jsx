@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { FaLeaf, FaSeedling, FaSpa, FaInstagram } from "react-icons/fa";
 import { FaWhatsapp } from "react-icons/fa";
 import "../assets/About.css";
-import doc from "../assets/images/doc.png"
+import doc from "../assets/images/doctor.png"
 const fadeUp = {
     hidden: { opacity: 0, y: 40 },
     visible: (i = 1) => ({
