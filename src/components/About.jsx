@@ -84,7 +84,7 @@ export const About = () => {
                     <div className="founder-info">
                         <h3>Dr. Malavika Sadanandan</h3>
                         <p>
-                           Dr. Malavika Sadanandan, a dedicated BMAS and MD student of Ayurveda, is deeply passionate about reviving the ancient wisdom of natural healing. Though early in her journey, she has recently launched these wellness products with a mission to promote preventive healthcare and bring authentic Ayurvedic solutions to modern lifestyles.
+                           Dr. Malavika Sadanandan, a dedicated BAMS and MD student of Ayurveda, is deeply passionate about reviving the ancient wisdom of natural healing. Though early in her journey, she has recently launched these wellness products with a mission to promote preventive healthcare and bring authentic Ayurvedic solutions to modern lifestyles.
                         </p>
                     </div>
                 </div>
