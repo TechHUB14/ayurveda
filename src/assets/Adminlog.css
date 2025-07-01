@@ -1,0 +1,124 @@
+.admin-login-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-image: url("../assets/images/log.png");
+  background-repeat: no-repeat;
+  background-size: cover;
+  padding: 2rem; /* add some padding around */
+  box-sizing: border-box;
+}
+
+.admin-login-box {
+  background: #faf7f0;
+  padding: 3rem 3.5rem; /* increase padding */
+  border-radius: 25px;
+  box-shadow: 0 12px 30px rgba(74, 93, 35, 0.2);
+  width: 100%;
+  max-width: 420px; /* wider max-width for inputs */
+  text-align: center;
+  border: 2px solid #a3b18a;
+}
+
+.admin-login-title {
+  font-weight: 700;
+  font-size: 2.2rem; /* slightly larger */
+  margin-bottom: 2rem; /* more spacing */
+  color: #3f5217;
+  font-family: "Palatino Linotype", "Book Antiqua", Palatino, serif;
+  letter-spacing: 1.5px;
+}
+
+.admin-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem; /* increased gap */
+}
+
+.admin-form input {
+  padding: 14px 18px;
+  font-size: 1.2rem; /* larger font */
+  border: 2px solid #9bbf72;
+  border-radius: 15px;
+  background-color: #f3f6eb;
+  color: #3f5217;
+  transition: border-color 0.3s ease, background-color 0.3s ease;
+  box-shadow: inset 2px 2px 5px #d6e2b3, inset -2px -2px 5px #ffffff;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.admin-form input::placeholder {
+  color: #a3b18a;
+  font-style: italic;
+}
+
+.admin-button,
+.back-home-button {
+  cursor: pointer;
+  padding: 14px 0;
+  border-radius: 20px;
+  font-size: 1.2rem; /* larger text */
+  font-weight: 700;
+  border: none;
+  user-select: none;
+  transition: background 0.3s ease, box-shadow 0.3s ease;
+  box-shadow: 0 6px 20px rgb(139 172 72 / 0.5);
+  font-family: "Palatino Linotype", "Book Antiqua", Palatino, serif;
+  color: #faf7f0;
+  width: 100%; /* full width */
+  margin-top: 1rem;
+}
+
+.admin-button {
+  background: #7ca42b;
+}
+
+.admin-button:hover {
+  background: #5e7e17;
+  box-shadow: 0 8px 24px rgb(78 114 0 / 0.7);
+}
+
+.back-home-button {
+  margin-top: 1.5rem;
+  background: #d7e2c4;
+  color: #4a5d23;
+  box-shadow: none;
+  border: 2px solid #a3b18a;
+  width: auto;
+  padding: 12px 25px;
+  margin-left: auto;
+  margin-right: auto;
+  display: block;
+}
+
+.back-home-button:hover {
+  background: #c0d097;
+  color: #3f5217;
+  border-color: #7ca42b;
+  box-shadow: 0 5px 15px rgb(124 164 43 / 0.6);
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+  .admin-login-box {
+    padding: 2rem 2rem;
+    max-width: 95vw;
+  }
+
+  .admin-login-title {
+    font-size: 1.8rem;
+  }
+
+  .admin-button,
+  .back-home-button {
+    font-size: 1.1rem;
+    padding: 13px 0;
+  }
+}
+
+.img1{
+    width: 300px;
+    height: auto;
+}

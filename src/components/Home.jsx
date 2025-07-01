@@ -4,6 +4,8 @@ import { motion } from "framer-motion";
 import "../assets/Home.css";
 import img from "../assets/images/2.jpg";
 import im from "../assets/images/im3.png"
+import toast, { Toaster } from "react-hot-toast";
+
 
 export const Home = () => {
     const navigate = useNavigate();
@@ -16,9 +18,9 @@ export const Home = () => {
     const handleAbout = () => {
         navigate("/about");
     };
-const handleChange=()=>{
-    navigate("/product");
-}
+    const handleChange = () => {
+        navigate("/product");
+    }
 
 
     return (
@@ -71,25 +73,42 @@ const handleChange=()=>{
                     onClick={handleAbout}
                 >
                     About Us
+                </motion.button><br />
+                <Toaster position="top-center" />
+                <motion.button
+                    className="admin-button1"
+                    whileHover={{ scale: 1.2 }}
+                    onClick={() => {
+                        toast("⚠️ Only Admin Users must login", {
+                            duration: 1500,
+                        });
+
+                        setTimeout(() => {
+                            navigate("/adminlogin");
+                        }, 1500); // Delay matches toast duration
+                    }}
+                >
+                    Admin
                 </motion.button>
+
             </div>
 
             {showPopup && (
-    <motion.div
-        className="popup-card"
-        initial={{ scale: 0 }}
-        animate={{ scale: 1 }}
-        transition={{ type: "spring", stiffness: 300 }}
-       
-    >
-        <img src={im} alt="limited-stock" className="popup-image"/>
-        <p>🔥 Limited Stock Available!</p>
-        <button className="shop-now-btn" onClick={handleChange}>
-    Shop Now
-</button>
-        <button className="close-btn" onClick={() => setShowPopup(false)}>×</button>
-    </motion.div>
-)}
+                <motion.div
+                    className="popup-card"
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ type: "spring", stiffness: 300 }}
+
+                >
+                    <img src={im} alt="limited-stock" className="popup-image" />
+                    <p>🔥 Limited Stock Available!</p>
+                    <button className="shop-now-btn" onClick={handleChange}>
+                        Shop Now
+                    </button>
+                    <button className="close-btn" onClick={() => setShowPopup(false)}>×</button>
+                </motion.div>
+            )}
 
         </div>
     );
