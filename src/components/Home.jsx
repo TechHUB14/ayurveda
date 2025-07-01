@@ -82,9 +82,11 @@ const handleChange=()=>{
         transition={{ type: "spring", stiffness: 300 }}
        
     >
-        <img src={im} alt="limited-stock" className="popup-image"  onClick={handleChange}/>
+        <img src={im} alt="limited-stock" className="popup-image"/>
         <p>🔥 Limited Stock Available!</p>
-        <p>Order Soon.......!</p>
+        <button className="shop-now-btn" onClick={handleChange}>
+    Shop Now
+</button>
         <button className="close-btn" onClick={() => setShowPopup(false)}>×</button>
     </motion.div>
 )}
