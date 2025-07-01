@@ -1,11 +1,13 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import "../assets/Home.css";
 import img from "../assets/images/2.jpg";
+import im from "../assets/images/im3.png"
 
 export const Home = () => {
     const navigate = useNavigate();
+    const [showPopup, setShowPopup] = useState(true); // show popup initially
 
     const handleProduct = () => {
         navigate("/product");
@@ -14,6 +16,10 @@ export const Home = () => {
     const handleAbout = () => {
         navigate("/about");
     };
+const handleChange=()=>{
+    navigate("/product");
+}
+
 
     return (
         <div className="home-container">
@@ -50,7 +56,7 @@ export const Home = () => {
                     onClick={handleProduct}
                 >
                     View Products
-                </motion.button><br/><br/>
+                </motion.button><br /><br />
 
                 <motion.button
                     className="shop-button"
@@ -67,6 +73,22 @@ export const Home = () => {
                     About Us
                 </motion.button>
             </div>
+
+            {showPopup && (
+    <motion.div
+        className="popup-card"
+        initial={{ scale: 0 }}
+        animate={{ scale: 1 }}
+        transition={{ type: "spring", stiffness: 300 }}
+        onClick={handleChange}
+    >
+        <img src={im} alt="limited-stock" className="popup-image" />
+        <p>🔥 Limited Stock Available!</p>
+        <p>Order Soon.......!</p>
+        <button className="close-btn" onClick={() => setShowPopup(false)}>×</button>
+    </motion.div>
+)}
+
         </div>
     );
 };

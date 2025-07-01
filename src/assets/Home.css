@@ -91,4 +91,40 @@
 
 
 
+.popup-card {
+    position: fixed;
+    top: 100px;
+    right: 30px;
+    background-color: #fef9e7;
+    color: #1b1b1b;
+    padding: 1rem;
+    border-radius: 15px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+    z-index: 1000;
+    width: 250px;
+    text-align: center;
+    font-weight: bold;
+    font-size: 1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: fixed;
+    animation: fadeIn 0.5s ease-in-out;
+}
 
+.popup-image {
+    width: 100%;
+    border-radius: 10px;
+    margin-bottom: 0.5rem;
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: #555;
+    position: absolute;
+    top: 5px;
+    right: 10px;
+}
