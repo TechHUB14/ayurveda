@@ -80,9 +80,9 @@ const handleChange=()=>{
         initial={{ scale: 0 }}
         animate={{ scale: 1 }}
         transition={{ type: "spring", stiffness: 300 }}
-        onClick={handleChange}
+       
     >
-        <img src={im} alt="limited-stock" className="popup-image" />
+        <img src={im} alt="limited-stock" className="popup-image"  onClick={handleChange}/>
         <p>🔥 Limited Stock Available!</p>
         <p>Order Soon.......!</p>
         <button className="close-btn" onClick={() => setShowPopup(false)}>×</button>
