@@ -4,6 +4,7 @@ import { collection, getDocs, doc, getDoc } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import "../../assets/Admin.css";
+import logoimg from "../../assets/images/2.jpg"
 
 export const Admin = () => {
   const [orders, setOrders] = useState([]);
@@ -94,7 +95,8 @@ export const Admin = () => {
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.6, delay: 0.4 }}
         >
-          <h1>Welcome, {adminName || "Admin"} 🚀</h1>
+          <img src={logoimg} alt="logo" width={350} height={100} className="adimg"/>
+          <h1>Welcome, {adminName || "Admin"} </h1>
           <p>Total Orders: <strong>{orders.length}</strong></p>
         </motion.div>
 

@@ -13,7 +13,8 @@ import {
 import { motion } from "framer-motion";
 import jsPDF from "jspdf";
 import "../../assets/Orders.css";
-import invoice from "../../assets/images/2.jpg"
+import invoice from "../../assets/images/2.jpg";
+
 const pageVariants = {
   hidden: { opacity: 0, y: 40 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" } },
@@ -47,12 +48,10 @@ export const Orders = () => {
 
   const updateStatus = async (id, currentStatus) => {
     const nextStatus = getNextStatus(currentStatus);
-
     try {
       await updateDoc(doc(db, "orders", id), {
         status: nextStatus,
       });
-
       setOrders((prev) =>
         prev.map((order) =>
           order.id === id ? { ...order, status: nextStatus } : order
@@ -116,43 +115,69 @@ export const Orders = () => {
     document.body.removeChild(link);
   };
 
-  const exportPDF = (order) => {
-  const doc = new jsPDF();
-  doc.setFontSize(16);
-  doc.text("Order Invoice", 20, 20);
-  doc.setFontSize(12);
+  const generateInvoicePDF = (order) => {
+    return new Promise((resolve) => {
+      const doc = new jsPDF();
+      doc.setFontSize(16);
+      doc.text("Order Invoice", 20, 20);
+      doc.setFontSize(12);
 
-  const addr = `${order.houseNo}, ${order.street}, ${order.locality}, ${order.city}, ${order.state}, ${order.pincode}`;
-  const date = new Date(order.createdAt?.seconds * 1000);
+      const addr = `${order.houseNo}, ${order.street}, ${order.locality}, ${order.city}, ${order.state}, ${order.pincode}`;
+      const date = new Date(order.createdAt?.seconds * 1000);
 
-  // Text details
-  doc.text(`Order ID: ${order.id}`, 20, 35);
-  doc.text(`Name: ${order.name}`, 20, 45);
-  doc.text(`Phone: ${order.phone}`, 20, 55);
-  doc.text(`Email: ${order.email}`, 20, 65);
-  doc.text(`Address: ${addr}`, 20, 75);
-  doc.text(`Date: ${date.toLocaleDateString()}`, 20, 85);
-  doc.text(`Time: ${date.toLocaleTimeString()}`, 20, 95);
-  doc.text(`Status: ${order.status}`, 20, 105);
-  doc.text(`Total: ₹${order.total}`, 20, 115);
+      doc.text(`Order ID: ${order.id}`, 20, 35);
+      doc.text(`Name: ${order.name}`, 20, 45);
+      doc.text(`Phone: ${order.phone}`, 20, 55);
+      doc.text(`Email: ${order.email}`, 20, 65);
+      doc.text(`Address: ${addr}`, 20, 75);
+      doc.text(`Date: ${date.toLocaleDateString()}`, 20, 85);
+      doc.text(`Time: ${date.toLocaleTimeString()}`, 20, 95);
+      doc.text(`Status: ${order.status}`, 20, 105);
+      doc.text(`Total: ₹${order.total}`, 20, 115);
 
-  // Items
-  doc.text("Items:", 20, 130);
-  order.cart?.forEach((item, index) => {
-    doc.text(`• ${item.name} - ₹${item.price}`, 25, 140 + index * 10);
-  });
+      doc.text("Items:", 20, 130);
+      order.cart?.forEach((item, index) => {
+        doc.text(`• ${item.name} - ₹${item.price}`, 25, 140 + index * 10);
+      });
 
-  // Load image and add to PDF
-  const img = new Image();
-  img.crossOrigin = "anonymous";
-  img.src = invoice; // this is your imported local image (../../assets/images/2.jpg)
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+      img.src = invoice;
 
-  img.onload = () => {
-    doc.addImage(img, "JPEG", 140, 20, 50, 50); // Add image to top-right
+      img.onload = () => {
+        doc.addImage(img, "JPEG", 140, 20, 50, 50);
+        resolve(doc);
+      };
+    });
+  };
+
+  const uploadInvoiceBase64 = async (orderId, base64String) => {
+    try {
+      await updateDoc(doc(db, "orders", orderId), {
+        invoiceBase64: base64String,
+      });
+    } catch (err) {
+      console.error("Error uploading invoice:", err);
+    }
+  };
+
+  const handleDownloadInvoice = async (order) => {
+    const doc = await generateInvoicePDF(order);
     doc.save(`invoice_${order.id}.pdf`);
   };
-};
 
+  const handleWhatsAppInvoice = async (order) => {
+    const docPDF = await generateInvoicePDF(order);
+    const base64String = docPDF.output("datauristring");
+    await uploadInvoiceBase64(order.id, base64String);
+    const previewLink = `https://trisandhyaayurveda.netlify.app/invoice/${order.id}`;
+    const message = encodeURIComponent(
+      `Hello ${order.name},\n\nThank you for your order (ID: ${order.id}).\nYou can view/download your invoice here:\n${previewLink}`
+    );
+    const phone = order.phone.replace(/[^0-9]/g, "");
+    const waLink = `https://wa.me/91${phone}?text=${message}`;
+    window.open(waLink, "_blank");
+  };
 
   return (
     <motion.div
@@ -239,9 +264,18 @@ export const Orders = () => {
                   className="export-btn"
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  onClick={() => exportPDF(order)}
+                  onClick={() => handleDownloadInvoice(order)}
                 >
-                  🧾 Invoice
+                  ⬇️ Download Invoice
+                </motion.button>
+
+                <motion.button
+                  className="export-btn"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => handleWhatsAppInvoice(order)}
+                >
+                  📲 Send on WhatsApp
                 </motion.button>
               </div>
             </motion.div>

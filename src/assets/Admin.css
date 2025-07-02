@@ -96,7 +96,9 @@
 /* Admin.css */
 .settings-container {
   padding: 2rem;
-  background: #f4f7fa;
+  background-image: url("../assets/images/setting.png");
+  background-repeat: no-repeat;
+  background-size: cover;
   min-height: 100vh;
   font-family: "Segoe UI", sans-serif;
 }
@@ -104,7 +106,7 @@
 .settings-container h2 {
   text-align: center;
   margin-bottom: 2rem;
-  color: #333;
+  color: #ffffff;
 }
 
 .settings-grid {
@@ -115,7 +117,7 @@
 }
 
 .settings-card {
-  background-color: #fff;
+  background:linear-gradient(rgba(43, 39, 39, 0.5));
   padding: 20px;
   border-radius: 10px;
   box-shadow: 0 6px 15px rgba(0,0,0,0.05);
@@ -135,16 +137,16 @@
 }
 
 .settings-card h4 {
-  color: #555;
+  color: #ffffff;
   margin-bottom: 0.5rem;
 }
 
 .settings-card p {
-  color: #777;
+  color: #ffffff;
 }
 
 input {
-  width: 100%;
+  width: auto;
   padding: 10px 14px;
   font-size: 1rem;
   border-radius: 8px;
@@ -232,4 +234,10 @@ input {
 
 .back-button:hover {
   background-color: #005fa3;
+}
+.adimg {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: 0 auto; /* Center horizontally */
 }
