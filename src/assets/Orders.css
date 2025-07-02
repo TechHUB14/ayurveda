@@ -85,3 +85,18 @@
     margin-right: 0;
   }
 }
+
+.status-btn {
+  background-color: #0764e5;
+  color: white;
+  padding: 8px 14px;
+  font-weight: bold;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: 0.3s ease;
+}
+
+.status-btn:hover {
+  background-color: #258b08;
+}
