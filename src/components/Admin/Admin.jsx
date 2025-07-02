@@ -4,13 +4,14 @@ import { collection, getDocs, doc, getDoc } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import "../../assets/Admin.css";
-import logoimg from "../../assets/images/2.jpg"
+import logoimg from "../../assets/images/2.jpg";
 
 export const Admin = () => {
   const [orders, setOrders] = useState([]);
   const [stateStats, setStateStats] = useState({});
   const [adminName, setAdminName] = useState("");
   const navigate = useNavigate();
+const [totalAmount, setTotalAmount] = useState(0);
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(async (user) => {
@@ -35,23 +36,28 @@ export const Admin = () => {
     return () => unsubscribe();
   }, [navigate]);
 
-  useEffect(() => {
-    const fetchOrders = async () => {
-      const snapshot = await getDocs(collection(db, "orders"));
-      const list = snapshot.docs.map((doc) => doc.data());
-      setOrders(list);
+useEffect(() => {
+  const fetchOrders = async () => {
+    const snapshot = await getDocs(collection(db, "orders"));
+    const list = snapshot.docs.map((doc) => doc.data());
+    setOrders(list);
 
-      const stateCount = {};
-      list.forEach((order) => {
-        const state = order.state || "Unknown";
-        stateCount[state] = (stateCount[state] || 0) + 1;
-      });
+    // Count orders by state
+    const stateCount = {};
+    list.forEach((order) => {
+      const state = order.state || "Unknown";
+      stateCount[state] = (stateCount[state] || 0) + 1;
+    });
+    setStateStats(stateCount);
 
-      setStateStats(stateCount);
-    };
+    // ✅ Total amount (sum of all orders regardless of status)
+    const totalAmount = list.reduce((acc, o) => acc + Number(o.total || 0), 0);
+    setTotalAmount(totalAmount);
+  };
 
-    fetchOrders();
-  }, []);
+  fetchOrders();
+}, []);
+
 
   const handleLogout = () => {
     auth.signOut().then(() => navigate("/adminlogin"));
@@ -95,10 +101,32 @@ export const Admin = () => {
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.6, delay: 0.4 }}
         >
-          <img src={logoimg} alt="logo" width={350} height={100} className="adimg"/>
-          <h1>Welcome, {adminName || "Admin"} </h1>
-          <p>Total Orders: <strong>{orders.length}</strong></p>
+          <img src={logoimg} alt="logo" width={350} height={100} className="adimg" />
+          <h1>Welcome, {adminName || "Admin"}</h1>
+          
         </motion.div>
+
+        {/* Stat Cards */}
+        <section className="dashboard-cards">
+          <motion.div className="stat-card" whileHover={{ scale: 1.05 }}>
+            <h3>Total Orders</h3>
+            <p>{orders.length}</p>
+          </motion.div>
+
+          <motion.div className="stat-card" whileHover={{ scale: 1.05 }}>
+            <h3>Shipped</h3>
+            <p>{orders.filter((o) => o.status === "Shipping").length}</p>
+          </motion.div>
+
+          <motion.div className="stat-card" whileHover={{ scale: 1.05 }}>
+            <h3>Delivered</h3>
+            <p>{orders.filter((o) => o.status === "Delivered").length}</p>
+          </motion.div>
+
+          <motion.div className="stat-card" whileHover={{ scale: 1.05 }}>
+      <h3>Total Amount:</h3> <p><strong>₹{totalAmount.toLocaleString()}</strong></p>
+          </motion.div>
+        </section>
 
         {/* State-wise Orders */}
         <section className="admin-stats">

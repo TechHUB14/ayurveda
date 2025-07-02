@@ -42,12 +42,12 @@ export const CheckOut = ({ cart = [], setCart }) => {
 
     try {
       await addDoc(collection(db, "orders"), orderData);
-      toast.success("✅ Order placed successfully!");
+      toast.success(" Order placed successfully!");
       setCart([]);
       setTimeout(() => navigate("/product"), 2000);
     } catch (error) {
       console.error("Order Error:", error);
-      toast.error("❌ Something went wrong.");
+      toast.error(" Something went wrong.");
     } finally {
       setLoading(false);
     }
