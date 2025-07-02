@@ -133,7 +133,7 @@ export const Orders = () => {
       doc.text(`Date: ${date.toLocaleDateString()}`, 20, 85);
       doc.text(`Time: ${date.toLocaleTimeString()}`, 20, 95);
       doc.text(`Status: ${order.status}`, 20, 105);
-      doc.text(`Total: ₹${order.total}`, 20, 115);
+      doc.text(`Total: ${order.total}`, 20, 115);
 
       doc.text("Items:", 20, 130);
       order.cart?.forEach((item, index) => {
