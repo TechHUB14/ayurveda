@@ -1,0 +1,81 @@
+.home-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Georgia', serif;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.hero-image {
+  width: 550px;
+  height: 450px;
+  border-radius: 10px;
+  margin: 0 auto 10px auto;
+  display: block;
+}
+
+.back {
+  text-align: center;
+  background: rgba(255, 255, 255, 0.4);
+  padding: 60px 40px;
+  border-radius: 15px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  max-width: 800px;
+}
+
+.home-title {
+  font-size: 3rem;
+  color: black;
+  margin: 0 0 1.5rem 0;
+}
+
+.home-description {
+  font-size: 1.3rem;
+  color: black;
+  margin: 0 auto 2rem auto;
+  max-width: 600px;
+}
+
+.shop-button {
+  background: #6B8E23;
+  color: white;
+  border: none;
+  padding: 15px 40px;
+  font-size: 1.1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  margin: 10px;
+  transition: all 0.3s;
+}
+
+
+.shop-now-btn {
+  background: #6B8E23;
+  color: white;
+  border: none;
+  padding: 12px 30px;
+  font-size: 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.shop-now-btn:hover {
+  background: #556B2F;
+}
+
+.close-btn {
+  position: absolute;
+  top: 10px;
+  right: 15px;
+  background: none;
+  border: none;
+  font-size: 2rem;
+  cursor: pointer;
+  color: #8B4513;
+}

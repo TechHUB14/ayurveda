@@ -1,0 +1,179 @@
+.about {
+  min-height: 100vh;
+  padding: 40px 20px;
+  font-family: 'Georgia', serif;
+  position: relative;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.about-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 40px;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 15px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.about-title {
+  font-size: 3rem;
+  color: #6B5D4F;
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.about-intro {
+  font-size: 1.2rem;
+  color: #5D4E37;
+  text-align: center;
+  line-height: 1.8;
+  margin-bottom: 3rem;
+  max-width: 900px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.about-mission,
+.about-values,
+.about-founder,
+.about-social {
+  margin-bottom: 4rem;
+}
+
+.about-mission h2,
+.about-values h2,
+.about-founder h2,
+.about-social h2 {
+  font-size: 2.5rem;
+  color: #8B4513;
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.about-mission p {
+  font-size: 1.1rem;
+  color: #5D4E37;
+  line-height: 1.8;
+  text-align: center;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.values-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 30px;
+  margin-top: 2rem;
+}
+
+.value-card {
+  background: #FFFEF7;
+  padding: 40px 30px;
+  border-radius: 10px;
+  border: 2px solid #D4A574;
+  text-align: center;
+  box-shadow: 0 4px 8px rgba(107, 93, 79, 0.2);
+}
+
+.value-icon {
+  font-size: 3rem;
+  color: #6B8E23;
+  margin-bottom: 1rem;
+}
+
+.value-card h3 {
+  font-size: 1.5rem;
+  color: #8B4513;
+  margin-bottom: 1rem;
+}
+
+.value-card p {
+  font-size: 1rem;
+  color: #6B5D4F;
+  line-height: 1.6;
+}
+
+.founder-profile {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 40px;
+  margin-top: 2rem;
+}
+
+.founder-img {
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 4px solid #D4A574;
+}
+
+.founder-info {
+  max-width: 600px;
+}
+
+.founder-info h3 {
+  font-size: 2rem;
+  color: #8B4513;
+  margin-bottom: 1rem;
+}
+
+.founder-info p {
+  font-size: 1.1rem;
+  color: #5D4E37;
+  line-height: 1.8;
+}
+
+.about-social {
+  text-align: center;
+}
+
+.about-social p {
+  font-size: 1.1rem;
+  color: #5D4E37;
+  margin-bottom: 2rem;
+}
+
+.social-icons {
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+}
+
+.social-icons a {
+  font-size: 3rem;
+  color: #6B8E23;
+  transition: all 0.3s;
+}
+
+.home-button {
+  position: fixed;
+  bottom: 30px;
+  left: 30px;
+  background: #6B8E23;
+  color: white;
+  border: none;
+  padding: 15px 30px;
+  font-size: 1.1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+@media (max-width: 768px) {
+  .about-title {
+    font-size: 2rem;
+  }
+
+  .founder-profile {
+    flex-direction: column;
+  }
+
+  .values-grid {
+    grid-template-columns: 1fr;
+  }
+}

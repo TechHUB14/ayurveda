@@ -1,0 +1,153 @@
+.checkout-page {
+  min-height: 100vh;
+  background: #F5F0E8;
+  padding: 40px 20px;
+  font-family: 'Georgia', serif;
+}
+
+.checkout-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 30px;
+}
+
+.checkout-form {
+  background: white;
+  padding: 40px;
+  border-radius: 15px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.checkout-form h2 {
+  color: #6B5D4F;
+  font-size: 2rem;
+  margin-bottom: 30px;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  color: #8B4513;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+  width: 100%;
+  padding: 12px;
+  border: 2px solid #D4A574;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-family: 'Georgia', serif;
+}
+
+.form-group textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.order-summary {
+  background: white;
+  padding: 40px;
+  border-radius: 15px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  height: fit-content;
+}
+
+.order-summary h2 {
+  color: #6B5D4F;
+  font-size: 2rem;
+  margin-bottom: 30px;
+}
+
+.summary-item {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 15px;
+  background: #F5F0E8;
+  border-radius: 8px;
+  margin-bottom: 15px;
+}
+
+.summary-item img {
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 6px;
+}
+
+.summary-details {
+  flex: 1;
+}
+
+.summary-details h4 {
+  color: #8B4513;
+  margin-bottom: 5px;
+}
+
+.summary-details p {
+  color: #6B8E23;
+  font-weight: bold;
+}
+
+.summary-total {
+  border-top: 3px solid #D4A574;
+  padding-top: 20px;
+  margin-top: 20px;
+}
+
+.summary-total h3 {
+  color: #6B5D4F;
+  font-size: 1.8rem;
+  text-align: right;
+}
+
+.checkout-actions {
+  display: flex;
+  gap: 15px;
+  margin-top: 30px;
+}
+
+.checkout-btn {
+  flex: 1;
+  background: #6B8E23;
+  color: white;
+  border: none;
+  padding: 15px;
+  font-size: 1.1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s;
+}
+
+.checkout-btn:hover {
+  background: #556B2F;
+}
+
+.checkout-btn.secondary {
+  background: #8B4513;
+}
+
+.checkout-btn.secondary:hover {
+  background: #6B3410;
+}
+
+.checkout-btn:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+@media (max-width: 968px) {
+  .checkout-container {
+    grid-template-columns: 1fr;
+  }
+}

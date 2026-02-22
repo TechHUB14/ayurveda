@@ -1,0 +1,161 @@
+.fullbg {
+  min-height: 100vh;
+  background: url('./images/check.jpg') center/cover no-repeat;
+  padding: 40px 20px;
+  font-family: 'Georgia', serif;
+}
+
+.cart-full-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  background: white;
+  padding: 40px;
+  border-radius: 15px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.cart-full-page h2 {
+  text-align: center;
+  color: #6B5D4F;
+  font-size: 2.5rem;
+  margin-bottom: 30px;
+}
+
+.empty-cart {
+  text-align: center;
+  font-size: 1.5rem;
+  color: #8B4513;
+  padding: 60px 20px;
+}
+
+.cart-grid {
+  display: grid;
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.cart-card {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  background: #F5F0E8;
+  padding: 20px;
+  border-radius: 10px;
+  border: 2px solid #D4A574;
+  position: relative;
+}
+
+.cart-card img {
+  width: 100px;
+  height: 100px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.cart-details {
+  flex: 1;
+}
+
+.cart-details h3 {
+  color: #8B4513;
+  margin-bottom: 8px;
+  font-size: 1.3rem;
+}
+
+.cart-details p {
+  color: #6B8E23;
+  font-size: 1.2rem;
+  font-weight: bold;
+  margin: 5px 0;
+}
+
+.cart-details .lot-id {
+  color: #8B4513;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.remove-btn {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 10px;
+  transition: transform 0.2s;
+}
+
+.remove-btn:hover {
+  transform: scale(1.2);
+}
+
+.cart-footer {
+  border-top: 3px solid #D4A574;
+  padding-top: 30px;
+  text-align: center;
+}
+
+.cart-footer h3 {
+  color: #6B5D4F;
+  font-size: 2rem;
+  margin-bottom: 30px;
+}
+
+.cart-actions {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.btn {
+  background: #6B8E23;
+  color: white;
+  border: none;
+  padding: 15px 40px;
+  font-size: 1.1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s;
+}
+
+.btn:hover {
+  background: #556B2F;
+  transform: translateY(-2px);
+}
+
+.btn.secondary {
+  background: #8B4513;
+}
+
+.btn.secondary:hover {
+  background: #6B3410;
+}
+
+.note {
+  text-align: center;
+  color: #dc3545;
+  font-size: 1.5rem;
+  margin-top: 30px;
+  font-weight: bold;
+}
+
+@media (max-width: 768px) {
+  .cart-card {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .cart-card img {
+    width: 150px;
+    height: 150px;
+  }
+
+  .cart-actions {
+    flex-direction: column;
+  }
+
+  .btn {
+    width: 100%;
+  }
+}
