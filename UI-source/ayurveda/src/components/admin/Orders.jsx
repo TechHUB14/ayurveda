@@ -116,47 +116,105 @@ export const Orders = () => {
 
   const generateInvoicePDF = (order) => {
     const doc = new jsPDF();
+    
+    // Add company logo/header
+    doc.setFontSize(20);
+    doc.setFont(undefined, 'bold');
+    doc.text("TRISANDHYA AYURVEDA", 105, 20, { align: 'center' });
+    doc.setFontSize(10);
+    doc.setFont(undefined, 'normal');
+    doc.text("Natural Ayurvedic Products", 105, 27, { align: 'center' });
+    doc.line(20, 32, 190, 32);
+    
     doc.setFontSize(16);
-    doc.text("Order Invoice", 20, 20);
-    doc.setFontSize(12);
-
+    doc.setFont(undefined, 'bold');
+    doc.text("INVOICE", 105, 42, { align: 'center' });
+    
+    // Order details
+    doc.setFontSize(10);
+    doc.setFont(undefined, 'normal');
     const addr = `${order.houseNo}, ${order.street}, ${order.locality}, ${order.city}, ${order.state}, ${order.pincode}`;
     const date = new Date(order.createdAt?.seconds * 1000);
 
-    doc.text(`Order ID: ${order.id}`, 20, 35);
-    doc.text(`Name: ${order.name}`, 20, 45);
-    doc.text(`Phone: ${order.phone}`, 20, 55);
-    doc.text(`Email: ${order.email}`, 20, 65);
-    doc.text(`Address: ${addr}`, 20, 75);
-    doc.text(`Date: ${date.toLocaleDateString()}`, 20, 85);
-    doc.text(`Time: ${date.toLocaleTimeString()}`, 20, 95);
-    doc.text(`Status: ${order.status}`, 20, 105);
-
-    doc.text("Items:", 20, 120);
-    let yPos = 130;
+    doc.text(`Order ID: ${order.id}`, 20, 55);
+    doc.text(`Date: ${date.toLocaleDateString()} ${date.toLocaleTimeString()}`, 20, 62);
+    doc.text(`Status: ${order.status}`, 20, 69);
+    
+    doc.line(20, 73, 190, 73);
+    
+    // Customer details
+    doc.setFont(undefined, 'bold');
+    doc.text("BILL TO:", 20, 80);
+    doc.setFont(undefined, 'normal');
+    doc.text(order.name, 20, 87);
+    doc.text(order.phone, 20, 94);
+    doc.text(order.email, 20, 101);
+    const addrLines = doc.splitTextToSize(addr, 85);
+    doc.text(addrLines, 20, 108);
+    
+    // Items table
+    let yPos = 125;
+    doc.setFont(undefined, 'bold');
+    doc.text("Item", 20, yPos);
+    doc.text("Qty", 120, yPos);
+    doc.text("Price", 145, yPos);
+    doc.text("Total", 170, yPos);
+    doc.line(20, yPos + 2, 190, yPos + 2);
+    
+    yPos += 8;
+    doc.setFont(undefined, 'normal');
+    
     order.cart?.forEach((item) => {
-      doc.text(`• ${item.name}`, 25, yPos);
-      if (item.promo_price) {
-        doc.text(`  Original: ₹${item.original_price}`, 30, yPos + 7);
-        doc.text(`  Discounted: ₹${item.final_price}`, 30, yPos + 14);
-        yPos += 21;
+      if (item.isBundle) {
+        doc.text(`${item.name} (Bundle)`, 20, yPos);
+        doc.text("-", 120, yPos);
+        doc.text("-", 145, yPos);
+        doc.text(`₹${item.final_price}`, 170, yPos);
+        yPos += 5;
+        item.products?.forEach((product) => {
+          doc.setFontSize(8);
+          doc.text(`  • ${product.name}`, 25, yPos);
+          yPos += 4;
+        });
+        doc.setFontSize(10);
+        yPos += 3;
       } else {
-        doc.text(`  Price: ₹${item.final_price}`, 30, yPos + 7);
-        yPos += 14;
+        const qty = item.quantity || 1;
+        doc.text(item.name, 20, yPos);
+        doc.text(String(qty), 120, yPos);
+        doc.text(`₹${item.original_price || item.final_price}`, 145, yPos);
+        doc.text(`₹${item.final_price}`, 170, yPos);
+        yPos += 6;
       }
     });
-
-    yPos += 10;
+    
+    yPos += 5;
+    doc.line(20, yPos, 190, yPos);
+    yPos += 8;
+    
+    // Totals
     if (order.subtotal) {
-      doc.text(`Original Price: ₹${order.subtotal}`, 20, yPos);
-      yPos += 10;
+      doc.text("Subtotal:", 145, yPos);
+      doc.text(`₹${order.subtotal}`, 170, yPos);
+      yPos += 7;
       if (order.discount > 0) {
-        doc.text(`Discount: -₹${order.discount}`, 20, yPos);
-        yPos += 10;
+        doc.setTextColor(76, 175, 80);
+        doc.text("Discount:", 145, yPos);
+        doc.text(`-₹${order.discount}`, 170, yPos);
+        doc.setTextColor(0, 0, 0);
+        yPos += 7;
       }
     }
-    doc.setFontSize(14);
-    doc.text(`Total: ₹${order.total}`, 20, yPos);
+    
+    doc.setFont(undefined, 'bold');
+    doc.setFontSize(12);
+    doc.text("Total:", 145, yPos);
+    doc.text(`₹${order.total}`, 170, yPos);
+    
+    // Footer
+    doc.setFontSize(8);
+    doc.setFont(undefined, 'italic');
+    doc.text("Thank you for your business!", 105, 280, { align: 'center' });
 
     return doc;
   };

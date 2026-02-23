@@ -30,11 +30,21 @@ export const CartPage = ({ cart, setCart }) => {
     });
   };
 
-  const totalAmount = cart.reduce((acc, item) => acc + item.price, 0);
+  const totalAmount = cart.reduce((acc, item) => {
+    if (item.isBundle) return acc + (item.price || 0);
+    return acc + (item.price || 0) * (item.quantity || 1);
+  }, 0);
 
   const handleRemove = (index) => {
     const updated = [...cart];
     updated.splice(index, 1);
+    setCart(updated);
+  };
+
+  const updateQuantity = (index, newQuantity) => {
+    if (newQuantity < 1) return;
+    const updated = [...cart];
+    updated[index] = { ...updated[index], quantity: newQuantity };
     setCart(updated);
   };
 
@@ -60,6 +70,26 @@ export const CartPage = ({ cart, setCart }) => {
           <>
             <div className="cart-grid">
               {cart.map((item, index) => {
+                if (item.isBundle) {
+                  return (
+                    <motion.div key={index} className="cart-card" whileHover={{ scale: 1.03 }} style={{ position: 'relative', border: '2px solid #4CAF50' }}>
+                      <div className="cart-details">
+                        <h3 style={{ color: '#4CAF50' }}>🎁 {item.name}</h3>
+                        <div style={{ margin: '10px 0' }}>
+                          {item.products.map((product, pIdx) => (
+                            <p key={pIdx} style={{ fontSize: '0.9rem', margin: '3px 0' }}>
+                              • {product.name}
+                            </p>
+                          ))}
+                        </div>
+                        <p style={{ color: '#4CAF50', fontWeight: 'bold', fontSize: '1.2rem' }}>₹{item.price}</p>
+                      </div>
+                      <button className="remove-btn" onClick={() => handleRemove(index)}>
+                        ❌
+                      </button>
+                    </motion.div>
+                  );
+                }
                 const activePromo = getActivePromotion(item.lot_id);
                 return (
                   <motion.div key={index} className="cart-card" whileHover={{ scale: 1.03 }} style={{ position: 'relative' }}>
@@ -84,6 +114,11 @@ export const CartPage = ({ cart, setCart }) => {
                       <h3>{item.name}</h3>
                       <p>₹{item.price}</p>
                       {item.lot_id && <p className="lot-id">Lot ID: {item.lot_id}</p>}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '10px' }}>
+                        <button onClick={() => updateQuantity(index, (item.quantity || 1) - 1)} style={{ padding: '5px 10px', cursor: 'pointer' }}>-</button>
+                        <span style={{ fontWeight: 'bold' }}>Qty: {item.quantity || 1}</span>
+                        <button onClick={() => updateQuantity(index, (item.quantity || 1) + 1)} style={{ padding: '5px 10px', cursor: 'pointer' }}>+</button>
+                      </div>
                     </div>
                     <button className="remove-btn" onClick={() => handleRemove(index)}>
                       ❌

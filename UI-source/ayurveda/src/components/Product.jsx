@@ -10,6 +10,7 @@ import bgImage from "../assets/images/check.jpg";
 export const Product = ({ cart, setCart }) => {
   const [products, setProducts] = useState([]);
   const [promotions, setPromotions] = useState([]);
+  const [bulkPromotions, setBulkPromotions] = useState([]);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [showContact, setShowContact] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -31,6 +32,16 @@ export const Product = ({ cart, setCart }) => {
         const promoSnapshot = await getDocs(collection(db, "promotions"));
         const promoData = promoSnapshot.docs.map(doc => doc.data());
         setPromotions(promoData);
+        
+        try {
+          const bulkPromoSnapshot = await getDocs(collection(db, "bulk_promotions"));
+          const bulkPromoData = bulkPromoSnapshot.docs.map(doc => doc.data());
+          setBulkPromotions(bulkPromoData);
+          console.log("Bulk Promotions:", bulkPromoData);
+        } catch (bulkError) {
+          console.warn("Could not fetch bulk promotions:", bulkError.message);
+          setBulkPromotions([]);
+        }
         console.log("Promotions:", promoData);
         console.log("Current datetime:", new Date().toISOString());
         
@@ -62,9 +73,50 @@ export const Product = ({ cart, setCart }) => {
     return promo;
   };
 
+  const getBulkPromotionBundles = () => {
+    const now = new Date();
+    const activeBulkPromos = bulkPromotions.filter(promo => {
+      const startTime = promo.start_datetime || promo.start_date;
+      const endTime = promo.end_datetime || promo.end_date;
+      const startValid = !startTime || new Date(startTime) <= now;
+      const endValid = !endTime || new Date(endTime) >= now;
+      return startValid && endValid;
+    });
+
+    return activeBulkPromos.map(promo => {
+      const allLotIds = [...(promo.buy_lot_ids || []), ...(promo.get_lot_ids || [])];
+      const bundleProducts = products.filter(p => allLotIds.includes(p.lot_id));
+      return { ...promo, products: bundleProducts };
+    }).filter(bundle => bundle.products.length > 0);
+  };
+
+  const getSingleProductPromotions = () => {
+    return products.filter(product => getActivePromotion(product.lot_id));
+  };
+
   const addToCart = (product) => {
-    setCart([...cart, product]);
+    const existingItem = cart.find(item => !item.isBundle && item.lot_id === product.lot_id);
+    if (existingItem) {
+      setCart(cart.map(item => 
+        !item.isBundle && item.lot_id === product.lot_id 
+          ? { ...item, quantity: (item.quantity || 1) + 1 }
+          : item
+      ));
+    } else {
+      setCart([...cart, { ...product, quantity: 1 }]);
+    }
     setSelectedProduct(null);
+  };
+
+  const addBundleToCart = (bundle) => {
+    const bundleItem = {
+      isBundle: true,
+      name: bundle.marketing_label,
+      products: bundle.products,
+      price: bundle.offer_price,
+      id: `bundle-${Date.now()}`
+    };
+    setCart([...cart, bundleItem]);
   };
 
   return (
@@ -116,6 +168,72 @@ export const Product = ({ cart, setCart }) => {
           );
         })}
       </div>
+
+      {(getSingleProductPromotions().length > 0 || getBulkPromotionBundles().length > 0) && (
+        <>
+          <h2 className="product-title" style={{ marginTop: '50px' }}>🔥 Sales & Special Offers</h2>
+          <div className="product-grid">
+            {getSingleProductPromotions().map((product) => {
+              const activePromo = getActivePromotion(product.lot_id);
+              return (
+                <motion.div
+                  className="product-card"
+                  key={`sale-${product.id}`}
+                  whileHover={{ scale: 1.05 }}
+                  onClick={() => {
+                    setSelectedProduct(product);
+                    setShowContact(false);
+                  }}
+                  style={{ position: 'relative', border: '2px solid #ff6b6b' }}
+                >
+                  <h3>{product.name}</h3>
+                  <p style={{ color: '#ff6b6b', fontWeight: 'bold', fontSize: '1rem', margin: '5px 0' }}>
+                    {activePromo.marketing_label}
+                  </p>
+                  <p style={{ color: '#4CAF50', fontWeight: 'bold', fontSize: '1.3rem', margin: '10px 0' }}>
+                    Promo Price: ₹{activePromo.promo_price}
+                  </p>
+                  {product.lot_id && <p className="lot-id">Lot ID: {product.lot_id}</p>}
+                </motion.div>
+              );
+            })}
+            {getBulkPromotionBundles().map((bundle, idx) => (
+              <motion.div
+                className="product-card"
+                key={`bundle-${idx}`}
+                whileHover={{ scale: 1.05 }}
+                style={{ position: 'relative', border: '2px solid #4CAF50' }}
+              >
+                <h3 style={{ color: '#4CAF50' }}>Bundle Offer</h3>
+                <p style={{ fontWeight: 'bold', fontSize: '1rem', margin: '5px 0' }}>
+                  {bundle.marketing_label}
+                </p>
+                <div style={{ margin: '10px 0' }}>
+                  {bundle.products.map((product, pIdx) => (
+                    <p key={pIdx} style={{ fontSize: '0.9rem', margin: '3px 0' }}>
+                      • {product.name}
+                    </p>
+                  ))}
+                </div>
+                {bundle.offer_price > 0 && (
+                  <p style={{ color: '#4CAF50', fontWeight: 'bold', fontSize: '1.3rem', margin: '10px 0' }}>
+                    Bundle Price: ₹{bundle.offer_price}
+                  </p>
+                )}
+                <button 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    addBundleToCart(bundle);
+                  }}
+                  style={{ marginTop: '10px', padding: '10px 20px', background: '#4CAF50', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold' }}
+                >
+                  Add Bundle to Cart
+                </button>
+              </motion.div>
+            ))}
+          </div>
+        </>
+      )}
 
       <motion.h2
         className="product-title"

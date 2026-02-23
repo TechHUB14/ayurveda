@@ -183,33 +183,62 @@ export const Checkout = ({ cart, setCart }) => {
 
         <div className="order-summary">
           <h2>Order Summary</h2>
-          {checkoutData?.items.map((item, index) => (
-            <div key={index} className="summary-item">
-              <img src={item.image} alt={item.name} />
-              <div className="summary-details">
-                <h4>{item.name}</h4>
-                {item.promotion_label && (
-                  <p style={{ fontSize: '0.9rem', color: '#ff6b6b', fontWeight: 'bold', margin: '5px 0' }}>
-                    {item.promotion_label}
-                  </p>
-                )}
-                {item.promo_price ? (
-                  <div>
-                    <div style={{ marginBottom: '5px' }}>
-                      <span style={{ textDecoration: 'line-through', color: '#999', fontSize: '0.95rem' }}>
-                        ₹{item.original_price}
-                      </span>
+          {checkoutData?.items.map((item, index) => {
+            if (item.isBundle) {
+              return (
+                <div key={index} className="summary-item" style={{ border: '2px solid #4CAF50', padding: '10px', marginBottom: '15px' }}>
+                  <div className="summary-details">
+                    <h4 style={{ color: '#4CAF50' }}>🎁 {item.name}</h4>
+                    <div style={{ margin: '10px 0' }}>
+                      {item.products.map((product, pIdx) => (
+                        <div key={pIdx} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem', margin: '5px 0' }}>
+                          <span>• {product.name}</span>
+                          <span>₹{product.price}</span>
+                        </div>
+                      ))}
                     </div>
-                    <div style={{ fontSize: '1.1rem', fontWeight: 'bold', color: '#4CAF50' }}>
-                      ₹{item.final_price}
+                    <div style={{ borderTop: '1px solid #ddd', paddingTop: '10px', marginTop: '10px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.95rem', color: '#999', marginBottom: '5px' }}>
+                        <span>Original Total:</span>
+                        <span style={{ textDecoration: 'line-through' }}>₹{item.original_price}</span>
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '1.1rem', fontWeight: 'bold', color: '#4CAF50' }}>
+                        <span>Bundle Price:</span>
+                        <span>₹{item.final_price}</span>
+                      </div>
                     </div>
                   </div>
-                ) : (
-                  <p style={{ fontSize: '1.1rem', fontWeight: 'bold' }}>₹{item.final_price}</p>
-                )}
+                </div>
+              );
+            }
+            return (
+              <div key={index} className="summary-item">
+                <img src={item.image} alt={item.name} />
+                <div className="summary-details">
+                  <h4>{item.name} {item.quantity > 1 && `x ${item.quantity}`}</h4>
+                  {item.promotion_label && (
+                    <p style={{ fontSize: '0.9rem', color: '#ff6b6b', fontWeight: 'bold', margin: '5px 0' }}>
+                      {item.promotion_label}
+                    </p>
+                  )}
+                  {item.promo_price ? (
+                    <div>
+                      <div style={{ marginBottom: '5px' }}>
+                        <span style={{ textDecoration: 'line-through', color: '#999', fontSize: '0.95rem' }}>
+                          ₹{item.original_price} {item.quantity > 1 && `x ${item.quantity}`}
+                        </span>
+                      </div>
+                      <div style={{ fontSize: '1.1rem', fontWeight: 'bold', color: '#4CAF50' }}>
+                        ₹{item.final_price}
+                      </div>
+                    </div>
+                  ) : (
+                    <p style={{ fontSize: '1.1rem', fontWeight: 'bold' }}>₹{item.final_price}</p>
+                  )}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
           {checkoutData && (
             <>
               <div style={{ borderTop: '1px solid #ddd', paddingTop: '15px', marginTop: '15px' }}>

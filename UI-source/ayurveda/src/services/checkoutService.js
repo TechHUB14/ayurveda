@@ -11,6 +11,26 @@ export const calculateCheckoutTotal = async (cart) => {
   const itemsWithPromo = [];
 
   cart.forEach(item => {
+    if (item.isBundle) {
+      const originalTotal = item.products.reduce((sum, p) => sum + p.price, 0);
+      const bundlePrice = item.price;
+      const discount = originalTotal - bundlePrice;
+      
+      subtotal += originalTotal;
+      totalDiscount += discount;
+      
+      itemsWithPromo.push({
+        isBundle: true,
+        name: item.name,
+        products: item.products,
+        original_price: originalTotal,
+        final_price: bundlePrice,
+        discount: discount
+      });
+      return;
+    }
+    
+    const quantity = item.quantity || 1;
     const activePromo = promotions.find(promo => {
       if (promo.lot_id !== item.lot_id) return false;
       const startTime = promo.start_datetime || promo.start_date;
@@ -20,10 +40,10 @@ export const calculateCheckoutTotal = async (cart) => {
       return startValid && endValid;
     });
 
-    const originalPrice = item.price;
+    const originalPrice = item.price * quantity;
     const promoPrice = activePromo?.promo_price ? Number(activePromo.promo_price) : null;
-    const finalPrice = promoPrice || originalPrice;
-    const discount = promoPrice ? originalPrice - promoPrice : 0;
+    const finalPrice = promoPrice ? promoPrice * quantity : originalPrice;
+    const discount = promoPrice ? (item.price - promoPrice) * quantity : 0;
 
     subtotal += originalPrice;
     totalDiscount += discount;
@@ -32,7 +52,8 @@ export const calculateCheckoutTotal = async (cart) => {
       lot_id: item.lot_id,
       name: item.name,
       image: item.image,
-      original_price: originalPrice,
+      quantity: quantity,
+      original_price: item.price,
       promo_price: promoPrice,
       final_price: finalPrice,
       discount: discount,
