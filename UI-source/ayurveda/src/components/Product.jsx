@@ -22,13 +22,14 @@ export const Product = ({ cart, setCart }) => {
   const [coupons, setCoupons] = useState([]);
   const [user, setUser] = useState(null);
   const [userName, setUserName] = useState("");
+  const [showUserDashboard, setShowUserDashboard] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setUser(currentUser);
       if (currentUser) {
-        const userDoc = await getDoc(doc(db, "users", currentUser.uid));
+        const userDoc = await getDoc(doc(db, "customers", currentUser.uid));
         if (userDoc.exists()) {
           setUserName(userDoc.data().name || currentUser.email);
         } else {
@@ -124,14 +125,11 @@ export const Product = ({ cart, setCart }) => {
     return products.filter(product => getActivePromotion(product.lot_id));
   };
 
-  const handleAuthAction = async () => {
-    if (user) {
-      await signOut(auth);
-      setUser(null);
-      setUserName("");
-    } else {
-      navigate("/login");
-    }
+  const handleLogout = async () => {
+    await signOut(auth);
+    setUser(null);
+    setUserName("");
+    setShowUserDashboard(false);
   };
 
   const addToCart = (product) => {
@@ -439,27 +437,133 @@ export const Product = ({ cart, setCart }) => {
         Home
       </motion.button>
 
-      <motion.button
-        style={{
-          position: 'fixed',
-          top: '20px',
-          right: '20px',
-          padding: '10px 20px',
-          background: user ? '#f44336' : '#4CAF50',
-          color: 'white',
-          border: 'none',
-          borderRadius: '8px',
-          cursor: 'pointer',
-          fontWeight: 'bold',
-          fontSize: '14px',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
-          zIndex: 1000
-        }}
-        whileHover={{ scale: 1.05 }}
-        onClick={handleAuthAction}
-      >
-        {user ? `Logout (${userName})` : "Login"}
-      </motion.button>
+      {user ? (
+        <div style={{ position: 'fixed', top: '20px', right: '20px', zIndex: 1000 }}>
+          <motion.button
+            style={{
+              padding: '10px 20px',
+              background: '#4CAF50',
+              color: 'white',
+              border: 'none',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              fontWeight: 'bold',
+              fontSize: '14px',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.2)'
+            }}
+            whileHover={{ scale: 1.05 }}
+            onClick={() => setShowUserDashboard(!showUserDashboard)}
+          >
+            👤 {userName}
+          </motion.button>
+          
+          <AnimatePresence>
+            {showUserDashboard && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                style={{
+                  position: 'absolute',
+                  top: '50px',
+                  right: '0',
+                  background: 'white',
+                  borderRadius: '8px',
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                  minWidth: '200px',
+                  overflow: 'hidden'
+                }}
+              >
+                <div style={{ padding: '15px', borderBottom: '1px solid #eee' }}>
+                  <p style={{ margin: 0, fontWeight: 'bold', color: '#333' }}>{userName}</p>
+                  <p style={{ margin: '5px 0 0 0', fontSize: '12px', color: '#666' }}>{user.email}</p>
+                </div>
+                <button
+                  onClick={() => {
+                    setShowUserDashboard(false);
+                    navigate('/orders');
+                  }}
+                  style={{
+                    width: '100%',
+                    padding: '12px 15px',
+                    background: 'white',
+                    border: 'none',
+                    borderBottom: '1px solid #eee',
+                    cursor: 'pointer',
+                    textAlign: 'left',
+                    fontSize: '14px',
+                    color: '#333'
+                  }}
+                  onMouseEnter={(e) => e.target.style.background = '#f5f5f5'}
+                  onMouseLeave={(e) => e.target.style.background = 'white'}
+                >
+                  📦 My Orders
+                </button>
+                <button
+                  onClick={() => {
+                    setShowUserDashboard(false);
+                    navigate('/cart');
+                  }}
+                  style={{
+                    width: '100%',
+                    padding: '12px 15px',
+                    background: 'white',
+                    border: 'none',
+                    borderBottom: '1px solid #eee',
+                    cursor: 'pointer',
+                    textAlign: 'left',
+                    fontSize: '14px',
+                    color: '#333'
+                  }}
+                  onMouseEnter={(e) => e.target.style.background = '#f5f5f5'}
+                  onMouseLeave={(e) => e.target.style.background = 'white'}
+                >
+                  🛒 My Cart
+                </button>
+                <button
+                  onClick={handleLogout}
+                  style={{
+                    width: '100%',
+                    padding: '12px 15px',
+                    background: 'white',
+                    border: 'none',
+                    cursor: 'pointer',
+                    textAlign: 'left',
+                    fontSize: '14px',
+                    color: '#f44336'
+                  }}
+                  onMouseEnter={(e) => e.target.style.background = '#f5f5f5'}
+                  onMouseLeave={(e) => e.target.style.background = 'white'}
+                >
+                  🚪 Logout
+                </button>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      ) : (
+        <motion.button
+          style={{
+            position: 'fixed',
+            top: '20px',
+            right: '20px',
+            padding: '10px 20px',
+            background: '#4CAF50',
+            color: 'white',
+            border: 'none',
+            borderRadius: '8px',
+            cursor: 'pointer',
+            fontWeight: 'bold',
+            fontSize: '14px',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+            zIndex: 1000
+          }}
+          whileHover={{ scale: 1.05 }}
+          onClick={() => navigate('/login')}
+        >
+          Login
+        </motion.button>
+      )}
 
       <motion.button
         style={{

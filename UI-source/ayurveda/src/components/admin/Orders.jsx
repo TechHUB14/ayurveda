@@ -40,7 +40,8 @@ export const Orders = () => {
   }, []);
 
   const getNextStatus = (status) => {
-    if (status === "Not Packed") return "Shipping";
+    if (status === "Not Packed") return "Awaiting Pickup";
+    if (status === "Awaiting Pickup") return "Shipping";
     if (status === "Shipping") return "Delivered";
     return "Delivered";
   };
@@ -90,12 +91,12 @@ export const Orders = () => {
     ];
     const rows = filteredOrders.map((order) => [
       order.id,
-      order.name,
-      `${order.houseNo}, ${order.street}, ${order.locality}, ${order.city}, ${order.state}, ${order.pincode}`,
-      order.phone,
-      order.email,
-      order.state,
-      order.total,
+      order.userName || order.name,
+      order.address || `${order.houseNo}, ${order.street}, ${order.locality}, ${order.city}, ${order.state}, ${order.pincode}`,
+      order.userPhone || order.phone,
+      order.userEmail || order.email,
+      order.state || "",
+      order.totalAmount || order.total,
       new Date(order.createdAt?.seconds * 1000).toLocaleDateString(),
       new Date(order.createdAt?.seconds * 1000).toLocaleTimeString(),
       order.status,
@@ -146,10 +147,10 @@ export const Orders = () => {
     doc.setFont(undefined, 'bold');
     doc.text("BILL TO:", 20, 80);
     doc.setFont(undefined, 'normal');
-    doc.text(order.name, 20, 87);
-    doc.text(order.phone, 20, 94);
-    doc.text(order.email, 20, 101);
-    const addrLines = doc.splitTextToSize(addr, 85);
+    doc.text(order.userName || order.name, 20, 87);
+    doc.text(order.userPhone || order.phone, 20, 94);
+    doc.text(order.userEmail || order.email, 20, 101);
+    const addrLines = doc.splitTextToSize(order.address || addr, 85);
     doc.text(addrLines, 20, 108);
     
     // Items table
@@ -164,7 +165,8 @@ export const Orders = () => {
     yPos += 8;
     doc.setFont(undefined, 'normal');
     
-    order.cart?.forEach((item) => {
+    const items = order.items || order.cart || [];
+    items.forEach((item) => {
       if (item.isBundle) {
         doc.text(`${item.name} (Bundle)`, 20, yPos);
         doc.text("-", 120, yPos);
@@ -209,7 +211,7 @@ export const Orders = () => {
     doc.setFont(undefined, 'bold');
     doc.setFontSize(12);
     doc.text("Total:", 145, yPos);
-    doc.text(`₹${order.total}`, 170, yPos);
+    doc.text(`₹${order.totalAmount || order.total}`, 170, yPos);
     
     // Footer
     doc.setFontSize(8);
@@ -239,9 +241,9 @@ export const Orders = () => {
     const base64String = docPDF.output("datauristring");
     await uploadInvoiceBase64(order.id, base64String);
     const message = encodeURIComponent(
-      `Hello ${order.name},\n\nThank you for your order (ID: ${order.id}).\nTotal: ₹${order.total}\nStatus: ${order.status}`
+      `Hello ${order.userName || order.name},\n\nThank you for your order (ID: ${order.id}).\nTotal: ₹${order.totalAmount || order.total}\nStatus: ${order.status}`
     );
-    const phone = order.phone.replace(/[^0-9]/g, "");
+    const phone = (order.userPhone || order.phone).replace(/[^0-9]/g, "");
     const waLink = `https://wa.me/91${phone}?text=${message}`;
     window.open(waLink, "_blank");
   };
@@ -296,11 +298,11 @@ export const Orders = () => {
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.3 }}
             >
-              <p><strong>Order ID:</strong> {order.id}</p>
-              <p><strong>Name:</strong> {order.name}</p>
-              <p><strong>Address:</strong> {`${order.houseNo}, ${order.street}, ${order.locality}, ${order.city}, ${order.state}, ${order.pincode}`}</p>
-              <p><strong>Phone:</strong> {order.phone}</p>
-              <p><strong>Email:</strong> {order.email}</p>
+              <p><strong>Order ID:</strong> {order.orderNumber || order.id}</p>
+              <p><strong>Name:</strong> {order.userName || order.name}</p>
+              <p><strong>Address:</strong> {order.address || `${order.houseNo}, ${order.street}, ${order.locality}, ${order.city}, ${order.state}, ${order.pincode}`}</p>
+              <p><strong>Phone:</strong> {order.userPhone || order.phone}</p>
+              <p><strong>Email:</strong> {order.userEmail || order.email}</p>
               <p><strong>Status:</strong> {order.status}</p>
               {order.subtotal && (
                 <>
@@ -310,7 +312,7 @@ export const Orders = () => {
                   )}
                 </>
               )}
-              <p><strong>Total:</strong> ₹{order.total}</p>
+              <p><strong>Total:</strong> ₹{order.totalAmount || order.total}</p>
               <p><strong>Date:</strong> {new Date(order.createdAt?.seconds * 1000).toLocaleDateString()}</p>
               <p><strong>Time:</strong> {new Date(order.createdAt?.seconds * 1000).toLocaleTimeString()}</p>
 

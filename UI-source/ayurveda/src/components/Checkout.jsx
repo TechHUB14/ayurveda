@@ -34,9 +34,9 @@ export const Checkout = ({ cart, setCart }) => {
       if (!user) {
         navigate("/login");
       } else {
-        const userDoc = await getDoc(doc(db, "users", user.uid));
+        const userDoc = await getDoc(doc(db, "customers", user.uid));
         if (userDoc.exists()) {
-          setUserData(userDoc.data());
+          setUserData({ ...userDoc.data(), uid: user.uid });
         }
       }
     });

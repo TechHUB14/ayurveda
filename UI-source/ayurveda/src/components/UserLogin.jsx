@@ -30,7 +30,7 @@ export const UserLogin = () => {
     try {
       if (isSignUp) {
         const userCredential = await createUserWithEmailAndPassword(auth, formData.email, formData.password);
-        await setDoc(doc(db, "users", userCredential.user.uid), {
+        await setDoc(doc(db, "customers", userCredential.user.uid), {
           name: formData.name,
           email: formData.email,
           phone: formData.phone,
@@ -40,7 +40,7 @@ export const UserLogin = () => {
           city: formData.city,
           state: formData.state,
           pincode: formData.pincode,
-          role: "user"
+          role: "customer"
         });
         alert("Account created successfully!");
       } else {

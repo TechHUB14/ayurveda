@@ -6,6 +6,7 @@ import Product from './components/Product';
 import CartPage from './components/CartPage';
 import Checkout from './components/Checkout';
 import UserLogin from './components/UserLogin';
+import UserOrders from './components/UserOrders';
 import AdminLogin from './components/admin/AdminLogin';
 import AdminDashboard from './components/admin/AdminDashboard';
 import Orders from './components/admin/Orders';
@@ -34,6 +35,7 @@ function App() {
         <Route path="/product" element={<Product cart={cart} setCart={setCart} />} />
         <Route path="/cart" element={<CartPage cart={cart} setCart={setCart} />} />
         <Route path="/checkout" element={<Checkout cart={cart} setCart={setCart} />} />
+        <Route path="/orders" element={<UserOrders setCart={setCart} />} />
         <Route path="/admin" element={<AdminLogin />} />
         <Route path="/admin/dashboard" element={<AdminDashboard />} />
         <Route path="/admin/orders" element={<Orders />} />

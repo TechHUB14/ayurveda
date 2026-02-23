@@ -69,15 +69,23 @@ export const calculateCheckoutTotal = async (cart) => {
   };
 };
 
-export const processCheckout = async (formData, cart) => {
+export const processCheckout = async (userData, cart) => {
   const checkoutData = await calculateCheckoutTotal(cart);
   
+  const ordersSnapshot = await getDocs(collection(db, "orders"));
+  const orderNumber = ordersSnapshot.size + 1;
+  
   const orderData = {
-    ...formData,
-    cart: checkoutData.items,
+    orderNumber: `ORD${String(orderNumber).padStart(5, '0')}`,
+    userId: userData.uid || userData.id,
+    userName: userData.name,
+    userEmail: userData.email,
+    userPhone: userData.phone,
+    address: `${userData.houseNo}, ${userData.street}, ${userData.locality}, ${userData.city}, ${userData.state} - ${userData.pincode}`,
+    items: checkoutData.items,
     subtotal: checkoutData.subtotal,
     discount: checkoutData.totalDiscount,
-    total: checkoutData.finalTotal,
+    totalAmount: checkoutData.finalTotal,
     status: "Not Packed",
     createdAt: Timestamp.now()
   };
@@ -86,6 +94,7 @@ export const processCheckout = async (formData, cart) => {
   
   return {
     orderId: docRef.id,
+    orderNumber: orderData.orderNumber,
     ...checkoutData
   };
 };
