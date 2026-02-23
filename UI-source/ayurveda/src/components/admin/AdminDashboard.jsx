@@ -22,12 +22,23 @@ export const AdminDashboard = () => {
           const userRef = doc(db, "users", user.uid);
           const userSnap = await getDoc(userRef);
           if (userSnap.exists()) {
-            setAdminName(userSnap.data().name || user.email);
+            const userData = userSnap.data();
+            if (userData.role !== "admin") {
+              alert("Access denied. Admin only.");
+              await signOut(auth);
+              navigate("/");
+              return;
+            }
+            setAdminName(userData.name || user.email);
           } else {
-            setAdminName(user.email);
+            alert("Access denied.");
+            await signOut(auth);
+            navigate("/");
           }
         } catch (error) {
-          setAdminName(user.email);
+          alert("Access denied.");
+          await signOut(auth);
+          navigate("/");
         }
       }
     });
@@ -77,6 +88,7 @@ export const AdminDashboard = () => {
           <li className="active">Dashboard</li>
           <li onClick={() => navigate("/admin/products")}>Products</li>
           <li onClick={() => navigate("/admin/promotions")}>Promotions</li>
+          <li onClick={() => navigate("/admin/coupons")}>Coupons</li>
           <li onClick={() => navigate("/admin/orders")}>Orders</li>
           <li onClick={() => navigate("/admin/settings")}>Settings</li>
           <li onClick={handleLogout} className="logout">Logout</li>

@@ -1,6 +1,10 @@
 .checkout-page {
   min-height: 100vh;
-  background: #F5F0E8;
+  background-image: url('../assets/images/log.avif');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
   padding: 40px 20px;
   font-family: 'Georgia', serif;
 }
@@ -144,6 +148,12 @@
 .checkout-btn:disabled {
   background: #ccc;
   cursor: not-allowed;
+}
+
+.checklogo {
+  height: 600px;
+  width: 1000px;
+  object-fit: contain;
 }
 
 @media (max-width: 968px) {

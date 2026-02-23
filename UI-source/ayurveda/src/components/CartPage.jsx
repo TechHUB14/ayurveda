@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "../firebase";
 import "../assets/CartPage.css";
+import logo from "../assets/images/2.png";
 
 export const CartPage = ({ cart, setCart }) => {
   const navigate = useNavigate();
@@ -50,6 +51,9 @@ export const CartPage = ({ cart, setCart }) => {
 
   return (
     <div className="fullbg">
+      <div style={{ textAlign: 'center', padding: '20px 0', background: 'transparent', borderBottom: 'none', marginBottom: '30px' }}>
+        <img src={logo} alt="Trisandhya Ayurveda" style={{ height: '200px', maxWidth: '90%', objectFit: 'contain', mixBlendMode: 'multiply' }} />
+      </div>
       <motion.div
         className="cart-full-page"
         initial={{ opacity: 0 }}

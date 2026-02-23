@@ -2,10 +2,13 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { FaInstagram, FaPhoneAlt } from "react-icons/fa";
-import { db } from "../firebase";
+import { db, auth } from "../firebase";
 import { collection, getDocs } from "firebase/firestore";
+import { onAuthStateChanged, signOut } from "firebase/auth";
+import { doc, getDoc } from "firebase/firestore";
 import "../assets/Product.css";
 import bgImage from "../assets/images/check.jpg";
+import logo from "../assets/images/2.png";
 
 export const Product = ({ cart, setCart }) => {
   const [products, setProducts] = useState([]);
@@ -15,7 +18,28 @@ export const Product = ({ cart, setCart }) => {
   const [showContact, setShowContact] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showCoupons, setShowCoupons] = useState(false);
+  const [coupons, setCoupons] = useState([]);
+  const [user, setUser] = useState(null);
+  const [userName, setUserName] = useState("");
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      setUser(currentUser);
+      if (currentUser) {
+        const userDoc = await getDoc(doc(db, "users", currentUser.uid));
+        if (userDoc.exists()) {
+          setUserName(userDoc.data().name || currentUser.email);
+        } else {
+          setUserName(currentUser.email);
+        }
+      } else {
+        setUserName("");
+      }
+    });
+    return () => unsubscribe();
+  }, []);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -42,6 +66,12 @@ export const Product = ({ cart, setCart }) => {
           console.warn("Could not fetch bulk promotions:", bulkError.message);
           setBulkPromotions([]);
         }
+        
+        const couponSnapshot = await getDocs(collection(db, "coupons"));
+        const couponData = couponSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))
+          .filter(c => c.active && new Date(c.end_date) >= new Date());
+        setCoupons(couponData);
+        
         console.log("Promotions:", promoData);
         console.log("Current datetime:", new Date().toISOString());
         
@@ -94,7 +124,22 @@ export const Product = ({ cart, setCart }) => {
     return products.filter(product => getActivePromotion(product.lot_id));
   };
 
+  const handleAuthAction = async () => {
+    if (user) {
+      await signOut(auth);
+      setUser(null);
+      setUserName("");
+    } else {
+      navigate("/login");
+    }
+  };
+
   const addToCart = (product) => {
+    if (!user) {
+      alert("Please login to add items to cart");
+      navigate("/login");
+      return;
+    }
     const existingItem = cart.find(item => !item.isBundle && item.lot_id === product.lot_id);
     if (existingItem) {
       setCart(cart.map(item => 
@@ -109,6 +154,11 @@ export const Product = ({ cart, setCart }) => {
   };
 
   const addBundleToCart = (bundle) => {
+    if (!user) {
+      alert("Please login to add items to cart");
+      navigate("/login");
+      return;
+    }
     const bundleItem = {
       isBundle: true,
       name: bundle.marketing_label,
@@ -121,6 +171,9 @@ export const Product = ({ cart, setCart }) => {
 
   return (
     <div className="product-page" style={{ backgroundImage: `url(${bgImage})` }}>
+      <div style={{ textAlign: 'center', padding: '20px 0', background: 'transparent', borderBottom: 'none' }}>
+        <img src={logo} alt="Trisandhya Ayurveda" style={{ height: '200px', maxWidth: '90%', objectFit: 'contain', mixBlendMode: 'multiply' }} />
+      </div>
       <h2 className="product-title">Our Available Products</h2>
       
       {loading && <p style={{textAlign: 'center', fontSize: '1.5rem'}}>Loading products...</p>}
@@ -311,6 +364,62 @@ export const Product = ({ cart, setCart }) => {
         )}
       </AnimatePresence>
 
+      <AnimatePresence>
+        {showCoupons && (
+          <motion.div
+            className="product-modal"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setShowCoupons(false)}
+          >
+            <motion.div
+              className="product-modal-content"
+              onClick={(e) => e.stopPropagation()}
+              style={{ maxWidth: '600px', maxHeight: '80vh', overflowY: 'auto' }}
+            >
+              <h2 style={{ textAlign: 'center', marginBottom: '20px' }}>🎟️ Available Coupons</h2>
+              {coupons.length === 0 ? (
+                <p style={{ textAlign: 'center', color: '#666' }}>No active coupons available at the moment.</p>
+              ) : (
+                <div style={{ display: 'grid', gap: '15px' }}>
+                  {coupons.map((coupon) => (
+                    <div key={coupon.id} style={{
+                      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                      borderRadius: '12px',
+                      padding: '20px',
+                      color: 'white',
+                      boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
+                    }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                        <div style={{ fontSize: '24px', fontWeight: 'bold', letterSpacing: '1px' }}>{coupon.code}</div>
+                        <div style={{ fontSize: '20px', fontWeight: 'bold' }}>
+                          {coupon.discount_type === "percentage" ? `${coupon.discount_value}% OFF` : `₹${coupon.discount_value} OFF`}
+                        </div>
+                      </div>
+                      {coupon.max_discount > 0 && (
+                        <div style={{ fontSize: '12px', opacity: 0.9, marginBottom: '10px' }}>Max discount: ₹{coupon.max_discount}</div>
+                      )}
+                      <div style={{ fontSize: '13px', opacity: 0.9, marginTop: '10px' }}>
+                        {coupon.min_purchase > 0 && <div>• Min purchase: ₹{coupon.min_purchase}</div>}
+                        <div>• Valid until: {new Date(coupon.end_date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</div>
+                        {coupon.usage_limit > 0 && <div>• Limited to {coupon.usage_limit} uses</div>}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+              <button 
+                onClick={() => setShowCoupons(false)}
+                style={{ marginTop: '20px', width: '100%', padding: '12px', background: '#4CAF50', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', fontSize: '16px' }}
+              >
+                Close
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <motion.button
         className="cart-button"
         whileHover={{ scale: 1.1 }}
@@ -328,6 +437,50 @@ export const Product = ({ cart, setCart }) => {
         onClick={() => navigate("/")}
       >
         Home
+      </motion.button>
+
+      <motion.button
+        style={{
+          position: 'fixed',
+          top: '20px',
+          right: '20px',
+          padding: '10px 20px',
+          background: user ? '#f44336' : '#4CAF50',
+          color: 'white',
+          border: 'none',
+          borderRadius: '8px',
+          cursor: 'pointer',
+          fontWeight: 'bold',
+          fontSize: '14px',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+          zIndex: 1000
+        }}
+        whileHover={{ scale: 1.05 }}
+        onClick={handleAuthAction}
+      >
+        {user ? `Logout (${userName})` : "Login"}
+      </motion.button>
+
+      <motion.button
+        style={{
+          position: 'fixed',
+          bottom: '100px',
+          right: '20px',
+          padding: '15px 25px',
+          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+          color: 'white',
+          border: 'none',
+          borderRadius: '50px',
+          cursor: 'pointer',
+          fontWeight: 'bold',
+          fontSize: '16px',
+          boxShadow: '0 4px 15px rgba(0,0,0,0.2)',
+          zIndex: 1000
+        }}
+        whileHover={{ scale: 1.1 }}
+        onClick={() => setShowCoupons(true)}
+      >
+        🎟️ View Coupons
       </motion.button>
     </div>
   );
