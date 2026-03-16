@@ -201,149 +201,156 @@ export const Checkout = ({ cart, setCart }) => {
 
         <div className="order-summary">
           <h2>Order Summary</h2>
-          {checkoutData?.items.map((item, index) => {
-            if (item.isBundle) {
-              return (
-                <div key={index} className="summary-item" style={{ border: '2px solid #4CAF50', padding: '10px', marginBottom: '15px' }}>
-                  <div className="summary-details">
-                    <h4 style={{ color: '#4CAF50' }}>🎁 {item.name}</h4>
-                    <div style={{ margin: '10px 0' }}>
-                      {item.products.map((product, pIdx) => (
-                        <div key={pIdx} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem', margin: '5px 0' }}>
-                          <span>• {product.name}</span>
-                          <span>₹{product.price}</span>
-                        </div>
-                      ))}
-                    </div>
-                    <div style={{ borderTop: '1px solid #ddd', paddingTop: '10px', marginTop: '10px' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.95rem', color: '#999', marginBottom: '5px' }}>
-                        <span>Original Total:</span>
-                        <span style={{ textDecoration: 'line-through' }}>₹{item.original_price}</span>
-                      </div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '1.1rem', fontWeight: 'bold', color: '#4CAF50' }}>
-                        <span>Bundle Price:</span>
-                        <span>₹{item.final_price}</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              );
-            }
+          {checkoutData && (() => {
+            const applicableLots = appliedCoupon?.applicable_products || [];
+            const hasLotRestriction = applicableLots.length > 0;
+
+            const getItemCouponDiscount = (item) => {
+              if (!appliedCoupon || item.isBundle || item.promo_price) return 0;
+              if (hasLotRestriction && !applicableLots.includes(item.lot_id)) return 0;
+              const eligibleTotal = checkoutData.items.reduce((sum, it) => {
+                if (it.isBundle || it.promo_price) return sum;
+                if (hasLotRestriction && !applicableLots.includes(it.lot_id)) return sum;
+                return sum + it.final_price;
+              }, 0);
+              if (eligibleTotal === 0) return 0;
+              return Math.round((item.final_price / eligibleTotal) * couponDiscount);
+            };
+
             return (
-              <div key={index} className="summary-item">
-                <img src={item.image} alt={item.name} />
-                <div className="summary-details">
-                  <h4>{item.name} {item.quantity > 1 && `x ${item.quantity}`}</h4>
-                  {item.promotion_label && (
-                    <p style={{ fontSize: '0.9rem', color: '#ff6b6b', fontWeight: 'bold', margin: '5px 0' }}>
-                      {item.promotion_label}
-                    </p>
+              <>
+                {checkoutData.items.map((item, index) => {
+                  const itemCouponDisc = getItemCouponDiscount(item);
+                  const isCouponApplied = itemCouponDisc > 0;
+
+                  if (item.isBundle) {
+                    return (
+                      <div key={index} className="summary-item" style={{ border: '2px solid #4CAF50', padding: '10px', marginBottom: '15px' }}>
+                        <div className="summary-details">
+                          <h4 style={{ color: '#4CAF50' }}>🎁 {item.name}</h4>
+                          <div style={{ margin: '10px 0' }}>
+                            {item.products.map((product, pIdx) => (
+                              <div key={pIdx} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem', margin: '5px 0' }}>
+                                <span>• {product.name}</span>
+                                <span>₹{product.price}</span>
+                              </div>
+                            ))}
+                          </div>
+                          <div style={{ borderTop: '1px solid #ddd', paddingTop: '10px', marginTop: '10px' }}>
+                            <span style={{ textDecoration: 'line-through', color: '#999' }}>₹{item.original_price}</span>
+                            <span style={{ marginLeft: '10px', fontWeight: 'bold', color: '#4CAF50', fontSize: '1.1rem' }}>₹{item.final_price}</span>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <div key={index} className="summary-item">
+                      <img src={item.image} alt={item.name} />
+                      <div className="summary-details">
+                        <h4>{item.name} {item.quantity > 1 && `x ${item.quantity}`}</h4>
+                        {item.promotion_label && (
+                          <p style={{ fontSize: '0.85rem', color: '#ff6b6b', fontWeight: 'bold', margin: '4px 0' }}>
+                            {item.promotion_label}
+                          </p>
+                        )}
+                        {item.promo_price ? (
+                          <div>
+                            <span style={{ textDecoration: 'line-through', color: '#999', fontSize: '0.95rem' }}>
+                              ₹{item.original_price * item.quantity}
+                            </span>
+                            <span style={{ marginLeft: '10px', fontSize: '1.1rem', fontWeight: 'bold', color: '#4CAF50' }}>
+                              ₹{item.final_price}
+                            </span>
+                          </div>
+                        ) : isCouponApplied ? (
+                          <div>
+                            <span style={{ textDecoration: 'line-through', color: '#999', fontSize: '0.95rem' }}>
+                              ₹{item.final_price}
+                            </span>
+                            <span style={{ marginLeft: '10px', fontSize: '1.1rem', fontWeight: 'bold', color: '#667eea' }}>
+                              ₹{item.final_price - itemCouponDisc}
+                            </span>
+                            <span style={{ marginLeft: '8px', fontSize: '0.8rem', color: '#667eea' }}>({appliedCoupon.code})</span>
+                          </div>
+                        ) : (
+                          <p style={{ fontSize: '1.1rem', fontWeight: 'bold' }}>₹{item.final_price}</p>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+
+                {/* Coupon Input */}
+                <div style={{ margin: '20px 0', padding: '15px', background: '#f9f9f9', borderRadius: '8px' }}>
+                  <h4 style={{ marginBottom: '10px' }}>Have a Coupon?</h4>
+                  {!appliedCoupon && availableCoupons.length > 0 && (
+                    <div style={{ marginBottom: '15px' }}>
+                      <p style={{ fontSize: '0.9rem', color: '#666', marginBottom: '8px' }}>Available Coupons (tap to apply):</p>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                        {availableCoupons.map(c => (
+                          <div
+                            key={c.id}
+                            onClick={() => setCouponCode(c.code)}
+                            style={{
+                              padding: '8px 12px',
+                              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                              color: 'white',
+                              borderRadius: '6px',
+                              cursor: 'pointer',
+                              fontSize: '0.85rem',
+                              fontWeight: 'bold'
+                            }}
+                          >
+                            {c.code} - {c.discount_type === 'percentage' ? `${c.discount_value}% OFF` : `₹${c.discount_value} OFF`}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
                   )}
-                  {item.promo_price ? (
-                    <div>
-                      <div style={{ marginBottom: '5px' }}>
-                        <span style={{ textDecoration: 'line-through', color: '#999', fontSize: '0.95rem' }}>
-                          ₹{item.original_price} {item.quantity > 1 && `x ${item.quantity}`}
-                        </span>
-                      </div>
-                      <div style={{ fontSize: '1.1rem', fontWeight: 'bold', color: '#4CAF50' }}>
-                        ₹{item.final_price}
-                      </div>
+                  {!appliedCoupon ? (
+                    <div style={{ display: 'flex', gap: '10px' }}>
+                      <input
+                        type="text"
+                        placeholder="Enter coupon code"
+                        value={couponCode}
+                        onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                        style={{ flex: 1, padding: '10px', border: '1px solid #ddd', borderRadius: '5px' }}
+                      />
+                      <button
+                        type="button"
+                        onClick={applyCoupon}
+                        style={{ padding: '10px 20px', background: '#4CAF50', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold' }}
+                      >
+                        Apply
+                      </button>
                     </div>
                   ) : (
-                    <p style={{ fontSize: '1.1rem', fontWeight: 'bold' }}>₹{item.final_price}</p>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px', background: '#e8f5e9', borderRadius: '5px' }}>
+                      <div>
+                        <strong style={{ color: '#4CAF50' }}>{appliedCoupon.code}</strong>
+                        <span style={{ marginLeft: '10px', fontSize: '0.9rem' }}>-₹{couponDiscount}</span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={removeCoupon}
+                        style={{ padding: '5px 10px', background: '#f44336', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer', fontSize: '0.9rem' }}
+                      >
+                        Remove
+                      </button>
+                    </div>
                   )}
                 </div>
-              </div>
+
+                {/* Subtotal */}
+                <div className="summary-total">
+                  <h3>Subtotal: ₹{checkoutData.finalTotal - couponDiscount}</h3>
+                  <h4>Please Contact Company to make Payments +91 81529 36826</h4>
+                </div>
+              </>
             );
-          })}
-          {checkoutData && (
-            <>
-              <div style={{ borderTop: '1px solid #ddd', paddingTop: '15px', marginTop: '15px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '1.1rem', fontWeight: '500', marginBottom: '8px' }}>
-                  <span>Original Price:</span>
-                  <span>₹{checkoutData.subtotal}</span>
-                </div>
-                {checkoutData.totalDiscount > 0 && (
-                  <>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '1.1rem', fontWeight: '500', color: '#4CAF50', marginBottom: '8px' }}>
-                      <span>Discounted Price ({Math.round((checkoutData.totalDiscount / checkoutData.subtotal) * 100)}%):</span>
-                      <span>₹{checkoutData.totalDiscount}</span>
-                    </div>
-                  </>
-                )}
-              </div>
-              <div style={{ margin: '20px 0', padding: '15px', background: '#f9f9f9', borderRadius: '8px' }}>
-                <h4 style={{ marginBottom: '10px' }}>Have a Coupon?</h4>
-                {!appliedCoupon && availableCoupons.length > 0 && (
-                  <div style={{ marginBottom: '15px' }}>
-                    <p style={{ fontSize: '0.9rem', color: '#666', marginBottom: '8px' }}>Available Coupons (tap to apply):</p>
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                      {availableCoupons.map(c => (
-                        <div
-                          key={c.id}
-                          onClick={() => setCouponCode(c.code)}
-                          style={{
-                            padding: '8px 12px',
-                            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                            color: 'white',
-                            borderRadius: '6px',
-                            cursor: 'pointer',
-                            fontSize: '0.85rem',
-                            fontWeight: 'bold'
-                          }}
-                        >
-                          {c.code} - {c.discount_type === 'percentage' ? `${c.discount_value}% OFF` : `₹${c.discount_value} OFF`}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-                {!appliedCoupon ? (
-                  <div style={{ display: 'flex', gap: '10px' }}>
-                    <input
-                      type="text"
-                      placeholder="Enter coupon code"
-                      value={couponCode}
-                      onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
-                      style={{ flex: 1, padding: '10px', border: '1px solid #ddd', borderRadius: '5px' }}
-                    />
-                    <button
-                      type="button"
-                      onClick={applyCoupon}
-                      style={{ padding: '10px 20px', background: '#4CAF50', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer', fontWeight: 'bold' }}
-                    >
-                      Apply
-                    </button>
-                  </div>
-                ) : (
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px', background: '#e8f5e9', borderRadius: '5px' }}>
-                    <div>
-                      <strong style={{ color: '#4CAF50' }}>{appliedCoupon.code}</strong>
-                      <span style={{ marginLeft: '10px', fontSize: '0.9rem' }}>-₹{couponDiscount}</span>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={removeCoupon}
-                      style={{ padding: '5px 10px', background: '#f44336', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer', fontSize: '0.9rem' }}
-                    >
-                      Remove
-                    </button>
-                  </div>
-                )}
-              </div>
-              {couponDiscount > 0 && (
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '1.1rem', fontWeight: '500', color: '#4CAF50', marginBottom: '8px' }}>
-                  <span>Coupon Discount:</span>
-                  <span>-₹{couponDiscount}</span>
-                </div>
-              )}
-              <div className="summary-total">
-                <h3>Total: ₹{checkoutData.finalTotal - couponDiscount}</h3>
-                <h4>Please Contact Company to make Payments +91 81529 36826</h4>
-              </div>
-            </>
-          )}
+          })()}
         </div>
       </motion.div>
     </div>

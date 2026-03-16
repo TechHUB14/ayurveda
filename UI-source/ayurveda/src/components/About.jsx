@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { FaLeaf, FaSeedling, FaSpa, FaInstagram, FaWhatsapp } from "react-icons/fa";
+import { FaLeaf, FaSeedling, FaSpa, FaInstagram, FaWhatsapp, FaYoutube } from "react-icons/fa";
 import "../assets/About.css";
 import doctorImage from "../assets/images/doctor.png";
 import bgImage from "../assets/images/pro.jpg";
@@ -101,6 +101,16 @@ export const About = () => {
                             aria-label="WhatsApp"
                         >
                             <FaWhatsapp />
+                        </motion.a>
+                        <motion.a
+                            href="https://www.youtube.com/@TRISANDHYAAYURVEDA"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            whileHover={{ scale: 1.3, color: "#FF0000" }}
+                            whileTap={{ scale: 0.9 }}
+                            aria-label="YouTube"
+                        >
+                            <FaYoutube />
                         </motion.a>
                     </div>
                 </motion.div>
