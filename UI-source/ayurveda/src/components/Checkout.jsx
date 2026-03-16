@@ -88,18 +88,24 @@ export const Checkout = ({ cart, setCart }) => {
         return;
       }
       
+      const applicableLots = coupon.applicable_products || [];
+      const hasLotRestriction = applicableLots.length > 0;
+
       const couponEligibleTotal = checkoutData.items.reduce((sum, item) => {
         if (item.isBundle || item.promo_price) return sum;
+        if (hasLotRestriction && !applicableLots.includes(item.lot_id)) return sum;
         return sum + item.final_price;
       }, 0);
 
       if (couponEligibleTotal === 0) {
-        toast.error("All items already have promotions. Coupon cannot be applied.");
+        toast.error(hasLotRestriction
+          ? "This coupon is not applicable to any items in your cart."
+          : "All items already have promotions. Coupon cannot be applied.");
         return;
       }
 
       if (couponEligibleTotal < coupon.min_purchase) {
-        toast.error(`Minimum purchase of ₹${coupon.min_purchase} required (excluding promo items)`);
+        toast.error(`Minimum purchase of ₹${coupon.min_purchase} required on eligible items`);
         return;
       }
       
@@ -115,8 +121,7 @@ export const Checkout = ({ cart, setCart }) => {
       
       setAppliedCoupon(coupon);
       setCouponDiscount(Math.round(discount));
-      const hasPromoItems = checkoutData.items.some(item => item.isBundle || item.promo_price);
-      toast.success(`Coupon applied! You saved ₹${Math.round(discount)}${hasPromoItems ? ' (applied on non-promo items only)' : ''}`);
+      toast.success(`Coupon applied! You saved ₹${Math.round(discount)}`);
     } catch (error) {
       toast.error("Error applying coupon");
     }
