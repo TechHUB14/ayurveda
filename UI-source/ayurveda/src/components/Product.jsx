@@ -197,10 +197,13 @@ export const Product = ({ cart, setCart }) => {
               }}
               style={{ position: 'relative' }}
             >
+              {product.marketing_label && (
+                <div className="marketing-label">{product.marketing_label}</div>
+              )}
               {activePromo && (
                 <div style={{
                   position: 'absolute',
-                  top: '10px',
+                  top: product.marketing_label ? '45px' : '10px',
                   right: '10px',
                   background: '#ff6b6b',
                   color: 'white',
@@ -215,6 +218,9 @@ export const Product = ({ cart, setCart }) => {
               <img src={product.image} alt={product.name} />
               <h3>{product.name}</h3>
               <p className="price">₹{product.price}</p>
+              <div className={`inventory-status ${product.inventory === 0 ? 'out-of-stock' : 'in-stock'}`}>
+                {product.inventory === 0 ? 'Out of Stock' : product.inventory != null ? `${product.inventory} in stock` : 'Available'}
+              </div>
               {product.lot_id && <p className="lot-id">Lot ID: {product.lot_id}</p>}
             </motion.div>
           );
@@ -293,7 +299,7 @@ export const Product = ({ cart, setCart }) => {
         transition={{ duration: 2, repeat: Infinity }}
         style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', flexWrap: 'wrap' }}
       >
-        New Product Coming Soon...! Stay Tuned at
+        New Products Coming Soon...! Stay Tuned at
         <motion.a
           href="https://www.instagram.com/trisandhya_ayurveda_"
           target="_blank"
@@ -339,8 +345,13 @@ export const Product = ({ cart, setCart }) => {
               <p>{selectedProduct.description}</p>
               <h3>₹{selectedProduct.price}</h3>
               {selectedProduct.lot_id && <p style={{color: '#8B4513', fontWeight: 'bold'}}>Lot ID: {selectedProduct.lot_id}</p>}
+              <div className={`inventory-status ${selectedProduct.inventory === 0 ? 'out-of-stock' : 'in-stock'}`} style={{ fontSize: '1.1rem', margin: '10px 0' }}>
+                {selectedProduct.inventory === 0 ? '❌ Out of Stock' : selectedProduct.inventory != null ? `📦 ${selectedProduct.inventory} in stock` : '✅ Available'}
+              </div>
               <div className="button-row">
-                <button onClick={() => addToCart(selectedProduct)}>Add to Cart</button>
+                <button onClick={() => addToCart(selectedProduct)} disabled={selectedProduct.inventory === 0} style={selectedProduct.inventory === 0 ? { opacity: 0.5, cursor: 'not-allowed' } : {}}>
+                  {selectedProduct.inventory === 0 ? 'Out of Stock' : 'Add to Cart'}
+                </button>
                 <button onClick={() => setShowContact(true)}>Contact</button>
               </div>
               {showContact && (
@@ -611,7 +622,7 @@ export const Product = ({ cart, setCart }) => {
               >
                 🌿
               </motion.div>
-              <h2 style={{ margin: '0 0 10px', fontSize: '1.8rem' }}>New Product Coming Soon...!</h2>
+              <h2 style={{ margin: '0 0 10px', fontSize: '1.8rem' }}>New Products Coming Soon...!</h2>
               <p style={{ margin: '0 0 25px', opacity: 0.9, fontSize: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', flexWrap: 'wrap' }}>
                 Stay Tuned at
                 <motion.a

@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { collection, addDoc, getDocs, deleteDoc, doc } from "firebase/firestore";
-import { db } from "../../firebase";
+import { collection, addDoc, getDocs, deleteDoc, doc, updateDoc } from "firebase/firestore";
+import { onAuthStateChanged } from "firebase/auth";
+import { db, auth } from "../../firebase";
 import { motion } from "framer-motion";
 import "../../assets/Admin.css";
 
@@ -12,14 +13,25 @@ export const ManageProducts = () => {
     price: "",
     description: "",
     image: null,
-    lot_id: ""
+    lot_id: "",
+    marketing_label: "",
+    inventory: ""
   });
   const [uploading, setUploading] = useState(false);
+  const [editingId, setEditingId] = useState(null);
+  const [editData, setEditData] = useState({ marketing_label: "", inventory: "" });
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetchProducts();
-  }, []);
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (!user) {
+        navigate("/admin");
+      } else {
+        fetchProducts();
+      }
+    });
+    return () => unsubscribe();
+  }, [navigate]);
 
   const fetchProducts = async () => {
     const querySnapshot = await getDocs(collection(db, "products"));
@@ -66,10 +78,12 @@ export const ManageProducts = () => {
           price: Number(formData.price),
           description: formData.description,
           image: base64Image,
-          lot_id: formData.lot_id
+          lot_id: formData.lot_id,
+          marketing_label: formData.marketing_label || "",
+          inventory: formData.inventory === "" ? null : Number(formData.inventory)
         });
         alert(`Product added successfully! Lot ID: ${formData.lot_id}`);
-        setFormData({ name: "", price: "", description: "", image: null, lot_id: "" });
+        setFormData({ name: "", price: "", description: "", image: null, lot_id: "", marketing_label: "", inventory: "" });
         document.querySelector('input[type="file"]').value = "";
         fetchProducts();
         setUploading(false);
@@ -78,6 +92,27 @@ export const ManageProducts = () => {
     } catch (error) {
       alert("Error adding product: " + error.message);
       setUploading(false);
+    }
+  };
+
+  const startEdit = (product) => {
+    setEditingId(product.id);
+    setEditData({
+      marketing_label: product.marketing_label || "",
+      inventory: product.inventory != null ? String(product.inventory) : ""
+    });
+  };
+
+  const handleEdit = async (id) => {
+    try {
+      await updateDoc(doc(db, "products", id), {
+        marketing_label: editData.marketing_label || "",
+        inventory: editData.inventory === "" ? null : Number(editData.inventory)
+      });
+      setEditingId(null);
+      fetchProducts();
+    } catch (error) {
+      alert("Error updating product: " + error.message);
     }
   };
 
@@ -157,6 +192,19 @@ export const ManageProducts = () => {
             required
           />
           <input
+            type="text"
+            placeholder="Marketing Label (e.g. New Product!!, Best Seller)"
+            value={formData.marketing_label}
+            onChange={(e) => setFormData({ ...formData, marketing_label: e.target.value })}
+          />
+          <input
+            type="number"
+            placeholder="Inventory Count (leave empty for default available)"
+            value={formData.inventory}
+            onChange={(e) => setFormData({ ...formData, inventory: e.target.value })}
+            min="0"
+          />
+          <input
             type="file"
             accept="image/*"
             onChange={(e) => setFormData({ ...formData, image: e.target.files[0] })}
@@ -178,9 +226,40 @@ export const ManageProducts = () => {
                 <h4>{product.name}</h4>
                 <p>₹{product.price}</p>
                 {product.lot_id && <p style={{color: '#8B4513', fontWeight: 'bold'}}>Lot ID: {product.lot_id}</p>}
+                {product.marketing_label && <p style={{color: '#ff6b6b', fontWeight: 'bold'}}>🏷️ {product.marketing_label}</p>}
+                <p style={{color: product.inventory === 0 ? '#f44336' : '#4CAF50', fontWeight: 'bold'}}>
+                  {product.inventory === 0 ? '❌ Out of Stock' : product.inventory != null ? `📦 Stock: ${product.inventory}` : '✅ Available'}
+                </p>
                 <p>{product.description}</p>
               </div>
-              <button onClick={() => handleDelete(product.id)}>Delete</button>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <button className="edit-btn" onClick={() => startEdit(product)}>✏️ Edit</button>
+                <button onClick={() => handleDelete(product.id)}>Delete</button>
+              </div>
+              {editingId === product.id && (
+                <div className="edit-overlay">
+                  <div className="edit-form">
+                    <h4>Edit — {product.name}</h4>
+                    <input
+                      type="text"
+                      placeholder="Marketing Label (e.g. New Product!!)"
+                      value={editData.marketing_label}
+                      onChange={(e) => setEditData({ ...editData, marketing_label: e.target.value })}
+                    />
+                    <input
+                      type="number"
+                      placeholder="Inventory Count (empty = Available)"
+                      value={editData.inventory}
+                      onChange={(e) => setEditData({ ...editData, inventory: e.target.value })}
+                      min="0"
+                    />
+                    <div className="edit-form-btns">
+                      <button onClick={() => handleEdit(product.id)}>💾 Save</button>
+                      <button className="cancel" onClick={() => setEditingId(null)}>Cancel</button>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           ))}
         </div>

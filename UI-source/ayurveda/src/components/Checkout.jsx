@@ -88,24 +88,35 @@ export const Checkout = ({ cart, setCart }) => {
         return;
       }
       
-      if (checkoutData.finalTotal < coupon.min_purchase) {
-        toast.error(`Minimum purchase of ₹${coupon.min_purchase} required`);
+      const couponEligibleTotal = checkoutData.items.reduce((sum, item) => {
+        if (item.isBundle || item.promo_price) return sum;
+        return sum + item.final_price;
+      }, 0);
+
+      if (couponEligibleTotal === 0) {
+        toast.error("All items already have promotions. Coupon cannot be applied.");
+        return;
+      }
+
+      if (couponEligibleTotal < coupon.min_purchase) {
+        toast.error(`Minimum purchase of ₹${coupon.min_purchase} required (excluding promo items)`);
         return;
       }
       
       let discount = 0;
       if (coupon.discount_type === "percentage") {
-        discount = (checkoutData.finalTotal * coupon.discount_value) / 100;
+        discount = (couponEligibleTotal * coupon.discount_value) / 100;
         if (coupon.max_discount > 0 && discount > coupon.max_discount) {
           discount = coupon.max_discount;
         }
       } else {
-        discount = coupon.discount_value;
+        discount = Math.min(coupon.discount_value, couponEligibleTotal);
       }
       
       setAppliedCoupon(coupon);
-      setCouponDiscount(discount);
-      toast.success(`Coupon applied! You saved ₹${discount}`);
+      setCouponDiscount(Math.round(discount));
+      const hasPromoItems = checkoutData.items.some(item => item.isBundle || item.promo_price);
+      toast.success(`Coupon applied! You saved ₹${Math.round(discount)}${hasPromoItems ? ' (applied on non-promo items only)' : ''}`);
     } catch (error) {
       toast.error("Error applying coupon");
     }

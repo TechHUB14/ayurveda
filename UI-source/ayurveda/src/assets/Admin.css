@@ -256,6 +256,7 @@
   border: 2px solid #D4A574;
   border-radius: 10px;
   align-items: center;
+  position: relative;
 }
 
 .product-item img {
@@ -291,6 +292,78 @@
 
 .product-item button:hover {
   background: #c82333;
+}
+
+.product-item .edit-btn {
+  background: #ff9800;
+}
+
+.product-item .edit-btn:hover {
+  background: #e68900;
+}
+
+.edit-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255,255,255,0.95);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 5;
+}
+
+.edit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 80%;
+  max-width: 400px;
+}
+
+.edit-form h4 {
+  color: #8B4513;
+  margin: 0;
+}
+
+.edit-form input {
+  padding: 10px;
+  border: 2px solid #D4A574;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-family: 'Georgia', serif;
+}
+
+.edit-form-btns {
+  display: flex;
+  gap: 10px;
+}
+
+.edit-form-btns button {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.95rem;
+  background: #6B8E23;
+  color: white;
+}
+
+.edit-form-btns button:hover {
+  background: #556B2F;
+}
+
+.edit-form-btns button.cancel {
+  background: #8B4513;
+}
+
+.edit-form-btns button.cancel:hover {
+  background: #6B3410;
 }
 
 .settings-container {
