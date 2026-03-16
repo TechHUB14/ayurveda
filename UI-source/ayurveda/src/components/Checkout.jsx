@@ -28,6 +28,7 @@ export const Checkout = ({ cart, setCart }) => {
   const [appliedCoupon, setAppliedCoupon] = useState(null);
   const [couponDiscount, setCouponDiscount] = useState(0);
   const [userData, setUserData] = useState(null);
+  const [availableCoupons, setAvailableCoupons] = useState([]);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -48,6 +49,18 @@ export const Checkout = ({ cart, setCart }) => {
       calculateCheckoutTotal(cart).then(setCheckoutData);
     }
   }, [cart]);
+
+  useEffect(() => {
+    const fetchCoupons = async () => {
+      const snapshot = await getDocs(collection(db, "coupons"));
+      const now = new Date();
+      const coupons = snapshot.docs
+        .map(doc => ({ id: doc.id, ...doc.data() }))
+        .filter(c => c.active && new Date(c.end_date) >= now && (c.usage_limit === 0 || c.used_count < c.usage_limit));
+      setAvailableCoupons(coupons);
+    };
+    fetchCoupons();
+  }, []);
 
   const applyCoupon = async () => {
     if (!couponCode.trim()) {
@@ -246,6 +259,30 @@ export const Checkout = ({ cart, setCart }) => {
               </div>
               <div style={{ margin: '20px 0', padding: '15px', background: '#f9f9f9', borderRadius: '8px' }}>
                 <h4 style={{ marginBottom: '10px' }}>Have a Coupon?</h4>
+                {!appliedCoupon && availableCoupons.length > 0 && (
+                  <div style={{ marginBottom: '15px' }}>
+                    <p style={{ fontSize: '0.9rem', color: '#666', marginBottom: '8px' }}>Available Coupons (tap to apply):</p>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                      {availableCoupons.map(c => (
+                        <div
+                          key={c.id}
+                          onClick={() => setCouponCode(c.code)}
+                          style={{
+                            padding: '8px 12px',
+                            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                            color: 'white',
+                            borderRadius: '6px',
+                            cursor: 'pointer',
+                            fontSize: '0.85rem',
+                            fontWeight: 'bold'
+                          }}
+                        >
+                          {c.code} - {c.discount_type === 'percentage' ? `${c.discount_value}% OFF` : `₹${c.discount_value} OFF`}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
                 {!appliedCoupon ? (
                   <div style={{ display: 'flex', gap: '10px' }}>
                     <input
