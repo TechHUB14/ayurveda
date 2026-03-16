@@ -31,12 +31,13 @@ export const AdminDashboard = () => {
             }
             setAdminName(userData.name || user.email);
           } else {
-            alert("Access denied.");
+            alert("Access denied. No user document found for UID: " + user.uid);
             await signOut(auth);
             navigate("/");
           }
         } catch (error) {
-          alert("Access denied.");
+          console.error("Firestore error:", error);
+          alert("Access denied. Firestore error: " + error.message);
           await signOut(auth);
           navigate("/");
         }

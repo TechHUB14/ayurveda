@@ -23,6 +23,7 @@ export const Product = ({ cart, setCart }) => {
   const [user, setUser] = useState(null);
   const [userName, setUserName] = useState("");
   const [showUserDashboard, setShowUserDashboard] = useState(false);
+  const [showComingSoon, setShowComingSoon] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -290,8 +291,20 @@ export const Product = ({ cart, setCart }) => {
         className="product-title"
         animate={{ opacity: [1, 0.8, 1], scale: [1, 1.02, 1] }}
         transition={{ duration: 2, repeat: Infinity }}
+        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', flexWrap: 'wrap' }}
       >
-        More Products Coming Soon...!
+        New Product Coming Soon...! Stay Tuned at
+        <motion.a
+          href="https://www.instagram.com/trisandhya_ayurveda_"
+          target="_blank"
+          rel="noopener noreferrer"
+          whileHover={{ scale: 1.3, color: '#C13584' }}
+          whileTap={{ scale: 0.9 }}
+          aria-label="Instagram"
+          style={{ display: 'inline-flex', alignItems: 'center', color: '#E1306C', fontSize: '1.5em' }}
+        >
+          <FaInstagram />
+        </motion.a>
       </motion.h2>
 
       <AnimatePresence>
@@ -564,6 +577,74 @@ export const Product = ({ cart, setCart }) => {
           Login
         </motion.button>
       )}
+
+      <AnimatePresence>
+        {showComingSoon && (
+          <motion.div
+            className="product-modal"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setShowComingSoon(false)}
+            style={{ zIndex: 2000 }}
+          >
+            <motion.div
+              onClick={(e) => e.stopPropagation()}
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.8, opacity: 0 }}
+              style={{
+                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                borderRadius: '20px',
+                padding: '40px',
+                maxWidth: '450px',
+                width: '90%',
+                textAlign: 'center',
+                color: 'white',
+                boxShadow: '0 20px 60px rgba(0,0,0,0.3)'
+              }}
+            >
+              <motion.div
+                animate={{ scale: [1, 1.2, 1] }}
+                transition={{ duration: 1.5, repeat: Infinity }}
+                style={{ fontSize: '60px', marginBottom: '15px' }}
+              >
+                🌿
+              </motion.div>
+              <h2 style={{ margin: '0 0 10px', fontSize: '1.8rem' }}>New Product Coming Soon...!</h2>
+              <p style={{ margin: '0 0 25px', opacity: 0.9, fontSize: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                Stay Tuned at
+                <motion.a
+                  href="https://www.instagram.com/trisandhya_ayurveda_"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  whileHover={{ scale: 1.3 }}
+                  whileTap={{ scale: 0.9 }}
+                  aria-label="Instagram"
+                  style={{ display: 'inline-flex', alignItems: 'center', color: 'white', fontSize: '1.5em' }}
+                >
+                  <FaInstagram />
+                </motion.a>
+              </p>
+              <button
+                onClick={() => setShowComingSoon(false)}
+                style={{
+                  padding: '12px 40px',
+                  background: 'white',
+                  color: '#764ba2',
+                  border: 'none',
+                  borderRadius: '30px',
+                  cursor: 'pointer',
+                  fontWeight: 'bold',
+                  fontSize: '16px'
+                }}
+              >
+                Explore Products
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <motion.button
         style={{

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from "firebase/auth";
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail } from "firebase/auth";
 import { auth, db } from "../firebase";
 import { doc, setDoc } from "firebase/firestore";
 import { motion } from "framer-motion";
@@ -22,7 +22,25 @@ export const UserLogin = () => {
     pincode: ""
   });
   const [error, setError] = useState("");
+  const [resetEmail, setResetEmail] = useState("");
+  const [showReset, setShowReset] = useState(false);
+  const [resetMsg, setResetMsg] = useState("");
   const navigate = useNavigate();
+
+  const handleForgotPassword = async (e) => {
+    e.preventDefault();
+    setResetMsg("");
+    if (!resetEmail) {
+      setResetMsg("Please enter your email address.");
+      return;
+    }
+    try {
+      await sendPasswordResetEmail(auth, resetEmail);
+      setResetMsg("✅ Password reset email sent! Check your inbox.");
+    } catch (err) {
+      setResetMsg(err.message);
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -152,7 +170,31 @@ export const UserLogin = () => {
           />
           {error && <p className="error-message">{error}</p>}
           <button type="submit">{isSignUp ? "Create Account" : "Login"}</button>
+          {!isSignUp && (
+            <span
+              className="toggle-link"
+              style={{ display: 'block', textAlign: 'right', marginTop: '5px', fontSize: '13px' }}
+              onClick={() => { setShowReset(!showReset); setResetMsg(""); }}
+            >
+              Forgot Password?
+            </span>
+          )}
         </form>
+        {showReset && (
+          <form onSubmit={handleForgotPassword} style={{ marginTop: '15px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            <input
+              type="email"
+              placeholder="Enter your registered email"
+              value={resetEmail}
+              onChange={(e) => setResetEmail(e.target.value)}
+              required
+            />
+            <button type="submit" style={{ padding: '12px', background: '#ff9800', color: 'white', border: 'none', borderRadius: '10px', fontWeight: 'bold', cursor: 'pointer', fontSize: '14px' }}>
+              Send Reset Link
+            </button>
+            {resetMsg && <p className="error-message" style={{ background: resetMsg.startsWith('✅') ? '#e8f5e9' : '#ffebee', color: resetMsg.startsWith('✅') ? '#2e7d32' : '#f44336' }}>{resetMsg}</p>}
+          </form>
+        )}
         <p className="toggle-text">
           {isSignUp ? "Already have an account?" : "Don't have an account?"}{" "}
           <span className="toggle-link" onClick={() => setIsSignUp(!isSignUp)}>
