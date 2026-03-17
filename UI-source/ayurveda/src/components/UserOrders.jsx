@@ -4,7 +4,30 @@ import { motion } from "framer-motion";
 import { db, auth } from "../firebase";
 import { collection, query, where, getDocs } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
+import SEO from "./common/SEO";
 import "../assets/Product.css";
+import "../assets/OrderTracking.css";
+
+const ORDER_STEPS = ["Not Packed", "Awaiting Pickup", "Shipping", "Delivered"];
+
+const OrderTimeline = ({ status }) => {
+  const currentIndex = ORDER_STEPS.indexOf(status);
+  return (
+    <div className="order-timeline">
+      {ORDER_STEPS.map((step, idx) => {
+        const isCompleted = idx <= currentIndex;
+        const isActive = idx === currentIndex;
+        return (
+          <div key={step} className={`timeline-step ${isCompleted ? "completed" : ""} ${isActive ? "active" : ""}`}>
+            <div className="timeline-dot">{isCompleted ? "✓" : idx + 1}</div>
+            {idx < ORDER_STEPS.length - 1 && <div className={`timeline-line ${idx < currentIndex ? "completed" : ""}`} />}
+            <span className="timeline-label">{step}</span>
+          </div>
+        );
+      })}
+    </div>
+  );
+};
 
 export const UserOrders = ({ setCart }) => {
   const [orders, setOrders] = useState([]);
@@ -55,6 +78,7 @@ export const UserOrders = ({ setCart }) => {
 
   return (
     <div className="product-page" style={{ minHeight: "100vh", padding: "20px" }}>
+      <SEO title="My Orders" description="Track your orders and order history at Trisandhya Ayurveda." />
       <h2 className="product-title">My Orders</h2>
       
       {loading && <p style={{ textAlign: "center", fontSize: "1.5rem" }}>Loading orders...</p>}
@@ -93,7 +117,7 @@ export const UserOrders = ({ setCart }) => {
                   ₹{order.totalAmount}
                 </p>
                 <p style={{ fontSize: "0.9rem", color: "#666" }}>
-                  Status: {order.status || "Pending"}
+                  Status: {order.status || "Not Packed"}
                 </p>
               </div>
             </div>
@@ -114,9 +138,11 @@ export const UserOrders = ({ setCart }) => {
               ))}
             </div>
             
+            <OrderTimeline status={order.status || "Not Packed"} />
+
             <button
               onClick={() => buyAgain(order)}
-              style={{ width: "100%", padding: "12px", background: "#4CAF50", color: "white", border: "none", borderRadius: "8px", cursor: "pointer", fontSize: "16px", fontWeight: "bold" }}
+              style={{ width: "100%", padding: "12px", background: "#4CAF50", color: "white", border: "none", borderRadius: "8px", cursor: "pointer", fontSize: "16px", fontWeight: "bold", marginTop: "15px" }}
             >
               🔄 Buy Again
             </button>

@@ -4,6 +4,7 @@ import { signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswor
 import { auth, db } from "../firebase";
 import { doc, setDoc } from "firebase/firestore";
 import { motion } from "framer-motion";
+import SEO from "./common/SEO";
 import "../assets/UserLogin.css";
 import logo from "../assets/images/2.png";
 
@@ -72,6 +73,7 @@ export const UserLogin = () => {
 
   return (
     <div className="user-login-page">
+      <SEO title="Login" description="Sign in or create an account at Trisandhya Ayurveda to shop authentic Ayurvedic products." />
       <div style={{ textAlign: 'center', padding: '20px 0', background: 'transparent', borderBottom: 'none' }}>
         <img src={logo} alt="Trisandhya Ayurveda" style={{ height: '100px', maxWidth: '90%', objectFit: 'contain', mixBlendMode: 'multiply' }} />
       </div>

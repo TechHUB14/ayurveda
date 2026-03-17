@@ -15,11 +15,12 @@ export const ManageProducts = () => {
     image: null,
     lot_id: "",
     marketing_label: "",
-    inventory: ""
+    inventory: "",
+    category: ""
   });
   const [uploading, setUploading] = useState(false);
   const [editingId, setEditingId] = useState(null);
-  const [editData, setEditData] = useState({ marketing_label: "", inventory: "" });
+  const [editData, setEditData] = useState({ marketing_label: "", inventory: "", category: "" });
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -80,10 +81,11 @@ export const ManageProducts = () => {
           image: base64Image,
           lot_id: formData.lot_id,
           marketing_label: formData.marketing_label || "",
-          inventory: formData.inventory === "" ? null : Number(formData.inventory)
+          inventory: formData.inventory === "" ? null : Number(formData.inventory),
+          category: formData.category || ""
         });
         alert(`Product added successfully! Lot ID: ${formData.lot_id}`);
-        setFormData({ name: "", price: "", description: "", image: null, lot_id: "", marketing_label: "", inventory: "" });
+        setFormData({ name: "", price: "", description: "", image: null, lot_id: "", marketing_label: "", inventory: "", category: "" });
         document.querySelector('input[type="file"]').value = "";
         fetchProducts();
         setUploading(false);
@@ -99,7 +101,8 @@ export const ManageProducts = () => {
     setEditingId(product.id);
     setEditData({
       marketing_label: product.marketing_label || "",
-      inventory: product.inventory != null ? String(product.inventory) : ""
+      inventory: product.inventory != null ? String(product.inventory) : "",
+      category: product.category || ""
     });
   };
 
@@ -107,7 +110,8 @@ export const ManageProducts = () => {
     try {
       await updateDoc(doc(db, "products", id), {
         marketing_label: editData.marketing_label || "",
-        inventory: editData.inventory === "" ? null : Number(editData.inventory)
+        inventory: editData.inventory === "" ? null : Number(editData.inventory),
+        category: editData.category || ""
       });
       setEditingId(null);
       fetchProducts();
@@ -197,6 +201,19 @@ export const ManageProducts = () => {
             value={formData.marketing_label}
             onChange={(e) => setFormData({ ...formData, marketing_label: e.target.value })}
           />
+          <select
+            value={formData.category}
+            onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+            required
+          >
+            <option value="">Select Category</option>
+            <option value="Skin Care">Skin Care</option>
+            <option value="Hair Care">Hair Care</option>
+            <option value="Digestive Health">Digestive Health</option>
+            <option value="Wellness">Wellness</option>
+            <option value="Immunity">Immunity</option>
+            <option value="Pain Relief">Pain Relief</option>
+          </select>
           <input
             type="number"
             placeholder="Inventory Count (leave empty for default available)"
@@ -227,6 +244,7 @@ export const ManageProducts = () => {
                 <p>₹{product.price}</p>
                 {product.lot_id && <p style={{color: '#8B4513', fontWeight: 'bold'}}>Lot ID: {product.lot_id}</p>}
                 {product.marketing_label && <p style={{color: '#ff6b6b', fontWeight: 'bold'}}>🏷️ {product.marketing_label}</p>}
+                {product.category && <p style={{color: '#667eea', fontWeight: 'bold'}}>📂 {product.category}</p>}
                 <p style={{color: product.inventory === 0 ? '#f44336' : '#4CAF50', fontWeight: 'bold'}}>
                   {product.inventory === 0 ? '❌ Out of Stock' : product.inventory != null ? `📦 Stock: ${product.inventory}` : '✅ Available'}
                 </p>
@@ -253,6 +271,18 @@ export const ManageProducts = () => {
                       onChange={(e) => setEditData({ ...editData, inventory: e.target.value })}
                       min="0"
                     />
+                    <select
+                      value={editData.category}
+                      onChange={(e) => setEditData({ ...editData, category: e.target.value })}
+                    >
+                      <option value="">Select Category</option>
+                      <option value="Skin Care">Skin Care</option>
+                      <option value="Hair Care">Hair Care</option>
+                      <option value="Digestive Health">Digestive Health</option>
+                      <option value="Wellness">Wellness</option>
+                      <option value="Immunity">Immunity</option>
+                      <option value="Pain Relief">Pain Relief</option>
+                    </select>
                     <div className="edit-form-btns">
                       <button onClick={() => handleEdit(product.id)}>💾 Save</button>
                       <button className="cancel" onClick={() => setEditingId(null)}>Cancel</button>

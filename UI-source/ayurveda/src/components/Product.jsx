@@ -3,9 +3,10 @@ import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { FaInstagram, FaPhoneAlt } from "react-icons/fa";
 import { db, auth } from "../firebase";
-import { collection, getDocs } from "firebase/firestore";
+import { collection, getDocs, addDoc, query, where, Timestamp } from "firebase/firestore";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
+import SEO from "./common/SEO";
 import "../assets/Product.css";
 import bgImage from "../assets/images/check.jpg";
 import logo from "../assets/images/2.png";
@@ -24,7 +25,52 @@ export const Product = ({ cart, setCart }) => {
   const [userName, setUserName] = useState("");
   const [showUserDashboard, setShowUserDashboard] = useState(false);
   const [showComingSoon, setShowComingSoon] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("All");
+  const [reviews, setReviews] = useState([]);
+  const [reviewText, setReviewText] = useState("");
+  const [reviewRating, setReviewRating] = useState(0);
+  const [submittingReview, setSubmittingReview] = useState(false);
   const navigate = useNavigate();
+
+  const fetchReviews = async (lotId) => {
+    const q = query(collection(db, "reviews"), where("lot_id", "==", lotId));
+    const snapshot = await getDocs(q);
+    const data = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+    data.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+    setReviews(data);
+  };
+
+  const submitReview = async (lotId) => {
+    if (!user) { alert("Please login to leave a review"); navigate("/login"); return; }
+    if (reviewRating === 0) { alert("Please select a rating"); return; }
+    if (!reviewText.trim()) { alert("Please write a review"); return; }
+    setSubmittingReview(true);
+    try {
+      await addDoc(collection(db, "reviews"), {
+        lot_id: lotId,
+        userId: user.uid,
+        userName: userName || "Anonymous",
+        rating: reviewRating,
+        text: reviewText.trim(),
+        createdAt: Timestamp.now()
+      });
+      setReviewText("");
+      setReviewRating(0);
+      fetchReviews(lotId);
+    } catch (err) {
+      alert("Error submitting review: " + err.message);
+    } finally {
+      setSubmittingReview(false);
+    }
+  };
+
+  const getAvgRating = (lotId) => {
+    const prodReviews = reviews.filter(r => r.lot_id === lotId);
+    if (prodReviews.length === 0) return null;
+    const avg = prodReviews.reduce((sum, r) => sum + r.rating, 0) / prodReviews.length;
+    return { avg: avg.toFixed(1), count: prodReviews.length };
+  };
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
@@ -73,6 +119,9 @@ export const Product = ({ cart, setCart }) => {
         const couponData = couponSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))
           .filter(c => c.active && new Date(c.end_date) >= new Date());
         setCoupons(couponData);
+
+        const reviewSnapshot = await getDocs(collection(db, "reviews"));
+        setReviews(reviewSnapshot.docs.map(d => ({ id: d.id, ...d.data() })));
         
         console.log("Promotions:", promoData);
         console.log("Current datetime:", new Date().toISOString());
@@ -170,10 +219,34 @@ export const Product = ({ cart, setCart }) => {
 
   return (
     <div className="product-page" style={{ backgroundImage: `url(${bgImage})` }}>
+      <SEO
+        title="Products"
+        description="Browse our collection of authentic Ayurvedic products. Natural skin care, hair care, wellness remedies and more from Trisandhya Ayurveda."
+      />
       <div style={{ textAlign: 'center', padding: '20px 0', background: 'transparent', borderBottom: 'none' }}>
         <img src={logo} alt="Trisandhya Ayurveda" style={{ height: '200px', maxWidth: '90%', objectFit: 'contain', mixBlendMode: 'multiply' }} />
       </div>
       <h2 className="product-title">Our Available Products</h2>
+
+      <div className="search-filter-bar">
+        <input
+          type="text"
+          className="search-input"
+          placeholder="🔍 Search products..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+        />
+        <select
+          className="category-select"
+          value={selectedCategory}
+          onChange={(e) => setSelectedCategory(e.target.value)}
+        >
+          <option value="All">All Categories</option>
+          {[...new Set(products.map(p => p.category).filter(Boolean))].map(cat => (
+            <option key={cat} value={cat}>{cat}</option>
+          ))}
+        </select>
+      </div>
       
       {loading && <p style={{textAlign: 'center', fontSize: '1.5rem'}}>Loading products...</p>}
       
@@ -184,7 +257,14 @@ export const Product = ({ cart, setCart }) => {
       )}
       
       <div className="product-grid">
-        {products.map((product) => {
+        {products
+          .filter(p => {
+            const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+              (p.description && p.description.toLowerCase().includes(searchQuery.toLowerCase()));
+            const matchesCategory = selectedCategory === "All" || p.category === selectedCategory;
+            return matchesSearch && matchesCategory;
+          })
+          .map((product) => {
           const activePromo = getActivePromotion(product.lot_id);
           return (
             <motion.div
@@ -194,6 +274,7 @@ export const Product = ({ cart, setCart }) => {
               onClick={() => {
                 setSelectedProduct(product);
                 setShowContact(false);
+                fetchReviews(product.lot_id);
               }}
               style={{ position: 'relative' }}
             >
@@ -222,6 +303,15 @@ export const Product = ({ cart, setCart }) => {
                 {product.inventory === 0 ? 'Out of Stock' : product.inventory != null ? `${product.inventory} in stock` : 'Available'}
               </div>
               {product.lot_id && <p className="lot-id">Lot ID: {product.lot_id}</p>}
+              {(() => {
+                const ratingInfo = getAvgRating(product.lot_id);
+                return ratingInfo ? (
+                  <div className="avg-rating">
+                    <span className="stars">{"★".repeat(Math.round(ratingInfo.avg))}{"☆".repeat(5 - Math.round(ratingInfo.avg))}</span>
+                    <span>{ratingInfo.avg} ({ratingInfo.count})</span>
+                  </div>
+                ) : null;
+              })()}
             </motion.div>
           );
         })}
@@ -354,6 +444,44 @@ export const Product = ({ cart, setCart }) => {
                 </button>
                 <button onClick={() => setShowContact(true)}>Contact</button>
               </div>
+
+              {/* Reviews Section */}
+              <div className="reviews-section">
+                <h4>⭐ Reviews ({reviews.length})</h4>
+                {reviews.length === 0 && <p style={{ fontSize: '0.9rem', color: '#999' }}>No reviews yet. Be the first!</p>}
+                <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
+                  {reviews.map(r => (
+                    <div key={r.id} className="review-item">
+                      <div className="review-header">
+                        <span className="review-author">{r.userName}</span>
+                        <span className="review-date">{r.createdAt?.seconds ? new Date(r.createdAt.seconds * 1000).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : ''}</span>
+                      </div>
+                      <div className="review-stars">{"★".repeat(r.rating)}{"☆".repeat(5 - r.rating)}</div>
+                      <p className="review-text">{r.text}</p>
+                    </div>
+                  ))}
+                </div>
+                {user && (
+                  <div className="review-form">
+                    <div className="star-picker">
+                      {[1, 2, 3, 4, 5].map(star => (
+                        <span key={star} onClick={() => setReviewRating(star)} style={{ color: star <= reviewRating ? '#f5a623' : '#ddd' }}>
+                          ★
+                        </span>
+                      ))}
+                    </div>
+                    <textarea
+                      placeholder="Write your review..."
+                      value={reviewText}
+                      onChange={(e) => setReviewText(e.target.value)}
+                    />
+                    <button onClick={() => submitReview(selectedProduct.lot_id)} disabled={submittingReview}>
+                      {submittingReview ? "Submitting..." : "Submit Review"}
+                    </button>
+                  </div>
+                )}
+              </div>
+
               {showContact && (
                 <motion.div
                   className="contact-popup"

@@ -6,6 +6,7 @@ import { calculateCheckoutTotal, processCheckout } from "../services/checkoutSer
 import { collection, getDocs, doc, getDoc } from "firebase/firestore";
 import { db, auth } from "../firebase";
 import { onAuthStateChanged } from "firebase/auth";
+import SEO from "./common/SEO";
 import "../assets/Checkout.css";
 import logo from "../assets/images/2.png";
 
@@ -161,6 +162,7 @@ export const Checkout = ({ cart, setCart }) => {
 
   return (
     <div className="checkout-page">
+      <SEO title="Checkout" description="Complete your order at Trisandhya Ayurveda. Secure checkout for Ayurvedic products." />
       <Toaster position="top-center" />
       <motion.div
         className="checkout-container"

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import toast, { Toaster } from 'react-hot-toast';
+import SEO from './common/SEO';
 import '../assets/Home.css';
 import heroImage from '../assets/images/2.png';
 import bgImage from '../assets/images/bgimg.webp';
@@ -12,7 +13,10 @@ function Home() {
 
   return (
     <div className="home-container" style={{ backgroundImage: `url(${bgImage})` }}>
-
+      <SEO
+        title="Home"
+        description="Discover the healing power of nature with Trisandhya Ayurveda. Shop authentic Ayurvedic wellness products crafted by Dr. Malavika Sadanandan."
+      />
       <div className="back">
           <img className="hero-image" src={heroImage} alt="Ayurvedic Products" />
         <motion.h1

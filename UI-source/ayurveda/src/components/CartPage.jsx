@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "../firebase";
+import SEO from "./common/SEO";
 import "../assets/CartPage.css";
 import logo from "../assets/images/2.png";
 
@@ -51,6 +52,7 @@ export const CartPage = ({ cart, setCart }) => {
 
   return (
     <div className="fullbg">
+      <SEO title="Cart" description="Review your cart and proceed to checkout at Trisandhya Ayurveda." />
       <div style={{ textAlign: 'center', padding: '20px 0', background: 'transparent', borderBottom: 'none', marginBottom: '30px' }}>
         <img src={logo} alt="Trisandhya Ayurveda" style={{ height: '200px', maxWidth: '90%', objectFit: 'contain', mixBlendMode: 'multiply' }} />
       </div>

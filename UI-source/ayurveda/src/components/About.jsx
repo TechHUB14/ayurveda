@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { FaLeaf, FaSeedling, FaSpa, FaInstagram, FaWhatsapp, FaYoutube } from "react-icons/fa";
+import SEO from "./common/SEO";
 import "../assets/About.css";
 import doctorImage from "../assets/images/doctor.png";
 import bgImage from "../assets/images/pro.jpg";
@@ -19,6 +20,10 @@ export const About = () => {
     
     return (
         <div className="about" style={{ backgroundImage: `url(${bgImage})` }}>
+            <SEO
+                title="About Us"
+                description="Learn about Trisandhya Ayurveda's mission, values, and founder Dr. Malavika Sadanandan. We celebrate ancient Ayurvedic healing traditions with modern quality standards."
+            />
             <motion.div
                 className="about-container"
                 initial="hidden"
