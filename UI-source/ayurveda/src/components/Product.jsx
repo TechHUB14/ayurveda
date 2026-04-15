@@ -11,7 +11,7 @@ import "../assets/Product.css";
 import bgImage from "../assets/images/check.jpg";
 import logo from "../assets/images/2.png";
 
-export const Product = ({ cart, setCart }) => {
+export const Product = ({ cart, setCart, voice }) => {
   const [products, setProducts] = useState([]);
   const [promotions, setPromotions] = useState([]);
   const [bulkPromotions, setBulkPromotions] = useState([]);
@@ -32,6 +32,107 @@ export const Product = ({ cart, setCart }) => {
   const [reviewRating, setReviewRating] = useState(0);
   const [submittingReview, setSubmittingReview] = useState(false);
   const navigate = useNavigate();
+
+  // Voice command registration
+  useEffect(() => {
+    if (!voice) return;
+    const findProductByTerm = (term) => {
+      const words = term.toLowerCase().split(/\s+/).filter(w => w.length > 2);
+      return products.find(p => {
+        const name = p.name.toLowerCase();
+        return words.some(w => name.includes(w));
+      });
+    };
+
+    const handleCommand = (text) => {
+      // Show products / dismiss coming soon popup
+      if (text.includes("show product")) {
+        setShowComingSoon(false);
+        voice.speak("Here are our products");
+        return true;
+      }
+      // Close popup (coming soon / product modal / coupons)
+      if (text.includes("close popup") || text.includes("close")) {
+        setShowComingSoon(false);
+        setSelectedProduct(null);
+        setShowCoupons(false);
+        voice.speak("Closed");
+        return true;
+      }
+      // Search by voice
+      if (text.startsWith("search ") || text.startsWith("find ")) {
+        const term = text.replace(/^(search|find)\s+/, "");
+        setSearchQuery(term);
+        voice.speak(`Searching for ${term}`);
+        return true;
+      }
+      if (text === "clear search" || text === "show all" || text.includes("all categories") || text.includes("all category")) {
+        setSearchQuery("");
+        setSelectedCategory("All");
+        voice.speak("Showing all products");
+        return true;
+      }
+      // Category filter by voice
+      if (text.startsWith("category ") || text.startsWith("filter ") || text.startsWith("show ") && !text.includes("show product") && !text.includes("show detail") && !text.includes("show all")) {
+        const term = text.replace(/^(category|filter|show)\s+/, "").toLowerCase();
+        const categories = [...new Set(products.map(p => p.category).filter(Boolean))];
+        const match = categories.find(c => c.toLowerCase().includes(term));
+        if (match) {
+          setSelectedCategory(match);
+          setSearchQuery("");
+          voice.speak(`Showing ${match} products`);
+        } else {
+          voice.speak(`No category found matching ${term}. Available categories are: ${categories.join(", ")}`);
+        }
+        return true;
+      }
+      // List categories
+      if (text.includes("what categories") || text.includes("list categories") || text.includes("which categories")) {
+        const categories = [...new Set(products.map(p => p.category).filter(Boolean))];
+        voice.speak(`Available categories are: ${categories.join(", ")}`);
+        return true;
+      }
+      // Show details — match any word from spoken text against product names
+      if (text.startsWith("show details") || text.startsWith("open ") || text.startsWith("tell me about ")) {
+        const term = text.replace(/^(show details|open|tell me about)\s+(of\s+|for\s+)?/, "");
+        const match = findProductByTerm(term);
+        if (match) {
+          setSelectedProduct(match);
+          fetchReviews(match.lot_id);
+          voice.speak(`${match.name}. Price ${match.price} rupees. ${match.description || ""}`);
+        } else {
+          voice.speak(`Could not find a product matching ${term}`);
+        }
+        return true;
+      }
+      // Add to cart by voice
+      if (text.includes("add to cart") || text.includes("add this")) {
+        if (selectedProduct) {
+          addToCart(selectedProduct);
+          voice.speak("Added to cart");
+        } else {
+          const nameMatch = text.match(/add\s+(.+?)\s+to cart/);
+          const product = nameMatch ? findProductByTerm(nameMatch[1]) : null;
+          if (product) {
+            addToCart(product);
+            voice.speak("Added to cart");
+          } else {
+            voice.speak("Please open a product first, or say add product name to cart");
+          }
+        }
+        return true;
+      }
+      // Read product list
+      if (text.includes("list product") || text.includes("what products") || text.includes("what do you have")) {
+        const names = products.slice(0, 5).map(p => p.name).join(", ");
+        voice.speak(`We have ${products.length} products. Some of them are: ${names}`);
+        return true;
+      }
+      return false;
+    };
+    voice.registerVoiceActions({ handleCommand });
+    return () => voice.unregisterVoiceActions(["handleCommand"]);
+  }, [voice, products, selectedProduct]);
 
   const fetchReviews = async (lotId) => {
     const q = query(collection(db, "reviews"), where("lot_id", "==", lotId));

@@ -7,9 +7,55 @@ import SEO from "./common/SEO";
 import "../assets/CartPage.css";
 import logo from "../assets/images/2.png";
 
-export const CartPage = ({ cart, setCart }) => {
+export const CartPage = ({ cart, setCart, voice }) => {
   const navigate = useNavigate();
   const [promotions, setPromotions] = useState([]);
+
+  useEffect(() => {
+    if (!voice) return;
+    const handleCommand = (text) => {
+      if (text.includes("remove") || text.includes("delete")) {
+        const name = text.replace(/^(remove|delete)\s+/, "");
+        const idx = cart.findIndex(item => item.name.toLowerCase().includes(name));
+        if (idx !== -1) {
+          const removed = cart[idx].name;
+          const updated = [...cart];
+          updated.splice(idx, 1);
+          setCart(updated);
+          voice.speak(`Removed ${removed} from cart`);
+        } else {
+          voice.speak("Could not find that item in your cart");
+        }
+        return true;
+      }
+      if (text.includes("clear cart") || text.includes("empty cart")) {
+        setCart([]);
+        voice.speak("Cart cleared");
+        return true;
+      }
+      if (text.includes("how many") || text.includes("cart total") || text.includes("what's in")) {
+        if (cart.length === 0) {
+          voice.speak("Your cart is empty");
+        } else {
+          const names = cart.map(i => i.name).join(", ");
+          voice.speak(`You have ${cart.length} items: ${names}. Total is ${totalAmount} rupees.`);
+        }
+        return true;
+      }
+      if (text.includes("place order") || text.includes("proceed")) {
+        if (cart.length > 0) {
+          voice.speak("Proceeding to checkout");
+          navigate("/checkout");
+        } else {
+          voice.speak("Your cart is empty");
+        }
+        return true;
+      }
+      return false;
+    };
+    voice.registerVoiceActions({ handleCommand });
+    return () => voice.unregisterVoiceActions(["handleCommand"]);
+  }, [voice, cart, setCart, navigate]);
 
   useEffect(() => {
     const fetchPromotions = async () => {

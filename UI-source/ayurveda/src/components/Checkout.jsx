@@ -10,7 +10,7 @@ import SEO from "./common/SEO";
 import "../assets/Checkout.css";
 import logo from "../assets/images/2.png";
 
-export const Checkout = ({ cart, setCart }) => {
+export const Checkout = ({ cart, setCart, voice }) => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     name: "",
@@ -30,6 +30,41 @@ export const Checkout = ({ cart, setCart }) => {
   const [couponDiscount, setCouponDiscount] = useState(0);
   const [userData, setUserData] = useState(null);
   const [availableCoupons, setAvailableCoupons] = useState([]);
+
+  // Voice command registration for checkout
+  useEffect(() => {
+    if (!voice) return;
+    const handleCommand = (text) => {
+      if (text.includes("place order") || text.includes("confirm order") || text.includes("submit order")) {
+        if (!userData) {
+          voice.speak("Please wait, loading your details");
+          return true;
+        }
+        voice.speak("Placing your order now");
+        document.querySelector(".checkout-btn[type='submit']")?.click();
+        return true;
+      }
+      if (text.includes("order summary") || text.includes("read order") || text.includes("what am i ordering")) {
+        if (checkoutData) {
+          const names = checkoutData.items.map(i => i.name).join(", ");
+          const total = checkoutData.finalTotal - couponDiscount;
+          voice.speak(`Your order has ${checkoutData.items.length} items: ${names}. Total is ${total} rupees.`);
+        }
+        return true;
+      }
+      if (text.includes("apply coupon") || text.startsWith("coupon ")) {
+        const code = text.replace(/^(apply coupon|coupon)\s*/, "").toUpperCase();
+        if (code) {
+          setCouponCode(code);
+          voice.speak(`Set coupon code to ${code}. Tap apply or say apply now.`);
+        }
+        return true;
+      }
+      return false;
+    };
+    voice.registerVoiceActions({ handleCommand });
+    return () => voice.unregisterVoiceActions(["handleCommand"]);
+  }, [voice, userData, checkoutData, couponDiscount]);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
