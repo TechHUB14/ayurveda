@@ -137,7 +137,7 @@ export const Orders = () => {
     const addr = `${order.houseNo}, ${order.street}, ${order.locality}, ${order.city}, ${order.state}, ${order.pincode}`;
     const date = new Date(order.createdAt?.seconds * 1000);
 
-    doc.text(`Order ID: ${order.id}`, 20, 55);
+    doc.text(`Order ID: ${order.orderNumber || order.id}`, 20, 55);
     doc.text(`Date: ${date.toLocaleDateString()} ${date.toLocaleTimeString()}`, 20, 62);
     doc.text(`Status: ${order.status}`, 20, 69);
     
@@ -171,7 +171,7 @@ export const Orders = () => {
         doc.text(`${item.name} (Bundle)`, 20, yPos);
         doc.text("-", 120, yPos);
         doc.text("-", 145, yPos);
-        doc.text(`₹${item.final_price}`, 170, yPos);
+        doc.text(`Rs.${item.final_price}`, 170, yPos);
         yPos += 5;
         item.products?.forEach((product) => {
           doc.setFontSize(8);
@@ -184,8 +184,8 @@ export const Orders = () => {
         const qty = item.quantity || 1;
         doc.text(item.name, 20, yPos);
         doc.text(String(qty), 120, yPos);
-        doc.text(`₹${item.original_price || item.final_price}`, 145, yPos);
-        doc.text(`₹${item.final_price}`, 170, yPos);
+        doc.text(`Rs.${item.original_price || item.final_price}`, 145, yPos);
+        doc.text(`Rs.${item.final_price}`, 170, yPos);
         yPos += 6;
       }
     });
@@ -197,12 +197,12 @@ export const Orders = () => {
     // Totals
     if (order.subtotal) {
       doc.text("Subtotal:", 145, yPos);
-      doc.text(`₹${order.subtotal}`, 170, yPos);
+      doc.text(`Rs.${order.subtotal}`, 170, yPos);
       yPos += 7;
       if (order.discount > 0) {
         doc.setTextColor(76, 175, 80);
         doc.text("Discount:", 145, yPos);
-        doc.text(`-₹${order.discount}`, 170, yPos);
+        doc.text(`-Rs.${order.discount}`, 170, yPos);
         doc.setTextColor(0, 0, 0);
         yPos += 7;
       }
@@ -211,7 +211,7 @@ export const Orders = () => {
     doc.setFont(undefined, 'bold');
     doc.setFontSize(12);
     doc.text("Total:", 145, yPos);
-    doc.text(`₹${order.totalAmount || order.total}`, 170, yPos);
+    doc.text(`Rs.${order.totalAmount || order.total}`, 170, yPos);
     
     // Footer
     doc.setFontSize(8);

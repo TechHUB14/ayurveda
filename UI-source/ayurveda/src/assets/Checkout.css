@@ -10,14 +10,21 @@
 }
 
 .checkout-container {
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 0 auto;
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr 1.5fr;
   gap: 30px;
+  align-items: start;
 }
 
 .checkout-form {
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+}
+
+.checkout-form-card {
   background: white;
   padding: 40px;
   border-radius: 15px;
@@ -62,7 +69,8 @@
   padding: 40px;
   border-radius: 15px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-  height: fit-content;
+  position: sticky;
+  top: 20px;
 }
 
 .order-summary h2 {

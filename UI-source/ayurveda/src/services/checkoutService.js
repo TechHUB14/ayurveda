@@ -12,6 +12,43 @@ export const calculateCheckoutTotal = async (cart) => {
 
   cart.forEach(item => {
     if (item.isBundle) {
+      if (item.isBogo) {
+        const purchaseTotal = (item.purchaseProducts || []).reduce((sum, p) => sum + (p.price * (item.purchase_quantity || 1)), 0);
+        const giftOriginalTotal = (item.giftProducts || []).reduce((sum, p) => sum + (p.price * (item.get_quantity || 1)), 0);
+        let giftFinalTotal = 0;
+        if (item.for_type === "PERCENT_OFF") {
+          giftFinalTotal = (item.giftProducts || []).reduce((sum, p) => sum + (p.price * (item.get_quantity || 1) * (1 - (item.for_discount || 0) / 100)), 0);
+        } else if (item.for_type === "FIXED_PRICE") {
+          giftFinalTotal = (item.for_discount || 0) * (item.get_quantity || 1);
+        }
+        // FREE = 0
+
+        const originalTotal = purchaseTotal + giftOriginalTotal;
+        const bundlePrice = purchaseTotal + giftFinalTotal;
+        const discount = originalTotal - bundlePrice;
+
+        subtotal += originalTotal;
+        totalDiscount += discount;
+
+        itemsWithPromo.push({
+          isBundle: true,
+          isBogo: true,
+          name: item.name,
+          products: item.products,
+          purchaseProducts: item.purchaseProducts,
+          giftProducts: item.giftProducts,
+          purchase_quantity: item.purchase_quantity,
+          get_quantity: item.get_quantity,
+          for_type: item.for_type,
+          for_discount: item.for_discount,
+          same_lot: item.same_lot,
+          original_price: Math.round(originalTotal),
+          final_price: Math.round(bundlePrice),
+          discount: Math.round(discount)
+        });
+        return;
+      }
+
       const originalTotal = item.products.reduce((sum, p) => sum + p.price, 0);
       const bundlePrice = item.price;
       const discount = originalTotal - bundlePrice;
@@ -74,6 +111,29 @@ export const processCheckout = async (userData, cart) => {
   
   const ordersSnapshot = await getDocs(collection(db, "orders"));
   const orderNumber = ordersSnapshot.size + 1;
+
+  // Strip heavy image data from items before saving to Firestore
+  const stripImage = (p) => ({ name: p.name, price: p.price, lot_id: p.lot_id });
+  const lightItems = checkoutData.items.map(item => {
+    if (item.isBogo) {
+      const { image, ...rest } = item;
+      return {
+        ...rest,
+        products: (item.products || []).map(stripImage),
+        purchaseProducts: (item.purchaseProducts || []).map(stripImage),
+        giftProducts: (item.giftProducts || []).map(stripImage)
+      };
+    }
+    if (item.isBundle) {
+      const { image, ...rest } = item;
+      return {
+        ...rest,
+        products: (item.products || []).map(stripImage)
+      };
+    }
+    const { image, ...rest } = item;
+    return rest;
+  });
   
   const orderData = {
     orderNumber: `ORD${String(orderNumber).padStart(5, '0')}`,
@@ -82,7 +142,8 @@ export const processCheckout = async (userData, cart) => {
     userEmail: userData.email,
     userPhone: userData.phone,
     address: `${userData.houseNo}, ${userData.street}, ${userData.locality}, ${userData.city}, ${userData.state} - ${userData.pincode}`,
-    items: checkoutData.items,
+    state: userData.state || "",
+    items: lightItems,
     subtotal: checkoutData.subtotal,
     discount: checkoutData.totalDiscount,
     totalAmount: checkoutData.finalTotal,

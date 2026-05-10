@@ -7,63 +7,19 @@ import SEO from "./common/SEO";
 import "../assets/CartPage.css";
 import logo from "../assets/images/2.png";
 
-export const CartPage = ({ cart, setCart, voice }) => {
+export const CartPage = ({ cart, setCart }) => {
   const navigate = useNavigate();
   const [promotions, setPromotions] = useState([]);
+  const [products, setProducts] = useState([]);
 
   useEffect(() => {
-    if (!voice) return;
-    const handleCommand = (text) => {
-      if (text.includes("remove") || text.includes("delete")) {
-        const name = text.replace(/^(remove|delete)\s+/, "");
-        const idx = cart.findIndex(item => item.name.toLowerCase().includes(name));
-        if (idx !== -1) {
-          const removed = cart[idx].name;
-          const updated = [...cart];
-          updated.splice(idx, 1);
-          setCart(updated);
-          voice.speak(`Removed ${removed} from cart`);
-        } else {
-          voice.speak("Could not find that item in your cart");
-        }
-        return true;
-      }
-      if (text.includes("clear cart") || text.includes("empty cart")) {
-        setCart([]);
-        voice.speak("Cart cleared");
-        return true;
-      }
-      if (text.includes("how many") || text.includes("cart total") || text.includes("what's in")) {
-        if (cart.length === 0) {
-          voice.speak("Your cart is empty");
-        } else {
-          const names = cart.map(i => i.name).join(", ");
-          voice.speak(`You have ${cart.length} items: ${names}. Total is ${totalAmount} rupees.`);
-        }
-        return true;
-      }
-      if (text.includes("place order") || text.includes("proceed")) {
-        if (cart.length > 0) {
-          voice.speak("Proceeding to checkout");
-          navigate("/checkout");
-        } else {
-          voice.speak("Your cart is empty");
-        }
-        return true;
-      }
-      return false;
+    const fetchData = async () => {
+      const promoSnapshot = await getDocs(collection(db, "promotions"));
+      setPromotions(promoSnapshot.docs.map(doc => doc.data()));
+      const prodSnapshot = await getDocs(collection(db, "products"));
+      setProducts(prodSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
     };
-    voice.registerVoiceActions({ handleCommand });
-    return () => voice.unregisterVoiceActions(["handleCommand"]);
-  }, [voice, cart, setCart, navigate]);
-
-  useEffect(() => {
-    const fetchPromotions = async () => {
-      const snapshot = await getDocs(collection(db, "promotions"));
-      const data = snapshot.docs.map(doc => doc.data());
-      setPromotions(data);
-    };
-    fetchPromotions();
+    fetchData();
   }, []);
 
   const getActivePromotion = (lotId) => {
@@ -124,17 +80,46 @@ export const CartPage = ({ cart, setCart, voice }) => {
               {cart.map((item, index) => {
                 if (item.isBundle) {
                   return (
-                    <motion.div key={index} className="cart-card" whileHover={{ scale: 1.03 }} style={{ position: 'relative', border: '2px solid #4CAF50' }}>
+                    <motion.div key={index} className="cart-card" whileHover={{ scale: 1.03 }} style={{ position: 'relative', border: item.isBogo ? '2px solid #9c27b0' : '2px solid #4CAF50' }}>
                       <div className="cart-details">
-                        <h3 style={{ color: '#4CAF50' }}>🎁 {item.name}</h3>
-                        <div style={{ margin: '10px 0' }}>
-                          {item.products.map((product, pIdx) => (
-                            <p key={pIdx} style={{ fontSize: '0.9rem', margin: '3px 0' }}>
-                              • {product.name}
-                            </p>
-                          ))}
-                        </div>
-                        <p style={{ color: '#4CAF50', fontWeight: 'bold', fontSize: '1.2rem' }}>₹{item.price}</p>
+                        <h3 style={{ color: item.isBogo ? '#9c27b0' : '#4CAF50' }}>🎁 {item.name}</h3>
+                        {item.isBogo ? (
+                          <>
+                            <div style={{ background: '#f3e5f5', borderRadius: '6px', padding: '12px', margin: '10px 0' }}>
+                              <p style={{ margin: '0 0 6px', fontSize: '0.95rem', fontWeight: 'bold', color: '#7b1fa2' }}>Purchase (Buy {item.purchase_quantity}):</p>
+                              {(item.purchaseProducts || []).map((p, pIdx) => (
+                                <div key={pIdx} style={{ display: 'flex', alignItems: 'center', gap: '10px', margin: '6px 0' }}>
+                                  <img src={p.image} alt={p.name} style={{ width: '36px', height: '36px', borderRadius: '4px', objectFit: 'cover' }} />
+                                  <span style={{ fontSize: '1rem', flex: 1 }}>{p.name}</span>
+                                  <span style={{ fontSize: '0.95rem', color: '#666' }}>₹{p.price} × {item.purchase_quantity}</span>
+                                </div>
+                              ))}
+                            </div>
+                            <div style={{ background: '#e8f5e9', borderRadius: '6px', padding: '12px', margin: '10px 0' }}>
+                              <p style={{ margin: '0 0 6px', fontSize: '0.95rem', fontWeight: 'bold', color: '#388e3c' }}>
+                                Gift (Get {item.get_quantity} {item.for_type === "FREE" ? "FREE" : item.for_type === "PERCENT_OFF" ? `${item.for_discount}% OFF` : `₹${item.for_discount} each`}):
+                              </p>
+                              {(item.giftProducts || []).map((p, pIdx) => (
+                                <div key={pIdx} style={{ display: 'flex', alignItems: 'center', gap: '10px', margin: '6px 0' }}>
+                                  <img src={p.image} alt={p.name} style={{ width: '36px', height: '36px', borderRadius: '4px', objectFit: 'cover' }} />
+                                  <span style={{ fontSize: '1rem', flex: 1 }}>{p.name}</span>
+                                  <span style={{ fontSize: '0.95rem', color: '#388e3c' }}>
+                                    {item.for_type === "FREE" ? "FREE" : item.for_type === "PERCENT_OFF" ? `₹${Math.round(p.price * (1 - (item.for_discount || 0) / 100))}` : `₹${item.for_discount}`}
+                                  </span>
+                                </div>
+                              ))}
+                            </div>
+                          </>
+                        ) : (
+                          <div style={{ margin: '10px 0' }}>
+                            {item.products.map((product, pIdx) => (
+                              <p key={pIdx} style={{ fontSize: '0.9rem', margin: '3px 0' }}>
+                                • {product.name}
+                              </p>
+                            ))}
+                          </div>
+                        )}
+                        <p style={{ color: item.isBogo ? '#9c27b0' : '#4CAF50', fontWeight: 'bold', fontSize: '1.2rem' }}>₹{item.price}</p>
                       </div>
                       <button className="remove-btn" onClick={() => handleRemove(index)}>
                         ❌
@@ -191,6 +176,64 @@ export const CartPage = ({ cart, setCart, voice }) => {
                 </button>
               </div>
             </div>
+
+            {/* Add More Items Section */}
+            {(() => {
+              const cartLotIds = cart.filter(i => !i.isBundle).map(i => i.lot_id);
+              const suggestions = products.filter(p => !cartLotIds.includes(p.lot_id) && p.inventory !== 0).slice(0, 6);
+              if (suggestions.length === 0) return null;
+              return (
+                <div style={{ marginTop: '30px' }}>
+                  <h3 style={{ marginBottom: '15px', color: '#333' }}>🛍️ Add More Items</h3>
+                  <div style={{ display: 'flex', gap: '15px', overflowX: 'auto', paddingBottom: '10px' }}>
+                    {suggestions.map(product => (
+                      <motion.div
+                        key={product.id}
+                        whileHover={{ scale: 1.03 }}
+                        style={{
+                          minWidth: '160px',
+                          maxWidth: '160px',
+                          background: 'white',
+                          borderRadius: '12px',
+                          boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                          overflow: 'hidden',
+                          flexShrink: 0
+                        }}
+                      >
+                        <img src={product.image} alt={product.name} style={{ width: '100%', height: '120px', objectFit: 'cover' }} />
+                        <div style={{ padding: '10px' }}>
+                          <p style={{ margin: '0 0 5px', fontWeight: '600', fontSize: '0.85rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{product.name}</p>
+                          <p style={{ margin: '0 0 8px', color: '#4CAF50', fontWeight: 'bold', fontSize: '1rem' }}>₹{product.price}</p>
+                          <button
+                            onClick={() => {
+                              const existing = cart.find(item => !item.isBundle && item.lot_id === product.lot_id);
+                              if (existing) {
+                                setCart(cart.map(item => !item.isBundle && item.lot_id === product.lot_id ? { ...item, quantity: (item.quantity || 1) + 1 } : item));
+                              } else {
+                                setCart([...cart, { ...product, quantity: 1 }]);
+                              }
+                            }}
+                            style={{
+                              width: '100%',
+                              padding: '8px',
+                              background: '#4CAF50',
+                              color: 'white',
+                              border: 'none',
+                              borderRadius: '6px',
+                              cursor: 'pointer',
+                              fontWeight: 'bold',
+                              fontSize: '0.8rem'
+                            }}
+                          >
+                            + Add to Cart
+                          </button>
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
+                </div>
+              );
+            })()}
           </>
         )}
       </motion.div>

@@ -82,7 +82,13 @@ export const AdminDashboard = () => {
       const stateCount = {};
       let total = 0;
       ordersList.forEach((order) => {
-        const state = order.state || "Unknown";
+        let state = order.state || "";
+        if (!state && order.address) {
+          const parts = order.address.split(",").map(s => s.trim());
+          const lastPart = parts[parts.length - 1] || "";
+          state = lastPart.replace(/[-\s]?\d+/g, "").trim() || "Unknown";
+        }
+        state = state || "Unknown";
         stateCount[state] = (stateCount[state] || 0) + 1;
         total += Number(order.totalAmount || order.total || 0);
       });
@@ -202,6 +208,7 @@ export const AdminDashboard = () => {
           <li onClick={() => navigate("/admin/products")}>Products</li>
           <li onClick={() => navigate("/admin/promotions")}>Promotions</li>
           <li onClick={() => navigate("/admin/coupons")}>Coupons</li>
+          <li onClick={() => navigate("/admin/shipping")}>Shipping</li>
           <li onClick={() => navigate("/admin/orders")}>Orders</li>
           <li onClick={() => navigate("/admin/settings")}>Settings</li>
           <li onClick={handleLogout} className="logout">Logout</li>

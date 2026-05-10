@@ -16,6 +16,7 @@ export const Coupons = () => {
     min_purchase: "",
     max_discount: "",
     applicable_products: [],
+    apply_on_subtotal: false,
     start_date: "",
     end_date: "",
     usage_limit: "",
@@ -50,6 +51,7 @@ export const Coupons = () => {
         min_purchase: Number(formData.min_purchase) || 0,
         max_discount: Number(formData.max_discount) || 0,
         applicable_products: formData.applicable_products.map(Number),
+        apply_on_subtotal: formData.apply_on_subtotal,
         start_date: formData.start_date,
         end_date: formData.end_date,
         usage_limit: Number(formData.usage_limit) || 0,
@@ -57,7 +59,7 @@ export const Coupons = () => {
         active: true
       });
       alert("Coupon created successfully!");
-      setFormData({ code: "", discount_type: "percentage", discount_value: "", min_purchase: "", max_discount: "", applicable_products: [], start_date: "", end_date: "", usage_limit: "", used_count: 0 });
+      setFormData({ code: "", discount_type: "percentage", discount_value: "", min_purchase: "", max_discount: "", applicable_products: [], apply_on_subtotal: false, start_date: "", end_date: "", usage_limit: "", used_count: 0 });
       setShowForm(false);
       fetchCoupons();
     } catch (error) {
@@ -158,6 +160,17 @@ export const Coupons = () => {
               min="0"
             />
           </>}
+          <div style={{ margin: '10px 0' }}>
+            <label style={{ fontWeight: 'bold', display: 'block', marginBottom: '10px' }}>
+              <input
+                type="checkbox"
+                checked={formData.apply_on_subtotal}
+                onChange={(e) => setFormData({ ...formData, apply_on_subtotal: e.target.checked })}
+                style={{ marginRight: '8px' }}
+              />
+              Apply on Subtotal (discount applies to cart subtotal instead of individual items)
+            </label>
+          </div>
           <div style={{ margin: '10px 0' }}>
             <label style={{ fontWeight: 'bold', display: 'block', marginBottom: '5px' }}>
               Applicable Products (leave unchecked for all products):
