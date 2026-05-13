@@ -35,6 +35,7 @@ export const Product = ({ cart, setCart }) => {
   const [showBogoModal, setShowBogoModal] = useState(null);
   const [modalQuantity, setModalQuantity] = useState(1);
   const navigate = useNavigate();
+  const [selectedGiftItems, setSelectedGiftItems] = useState([]);
 
 
   const fetchReviews = async (lotId) => {
@@ -246,36 +247,67 @@ export const Product = ({ cart, setCart }) => {
       navigate("/login");
       return;
     }
-    const purchaseProducts = products.filter(p => bogo.purchase_lot_ids?.includes(p.lot_id));
-    const giftLotIds = bogo.same_lot ? bogo.purchase_lot_ids : bogo.gift_lot_ids;
-    const giftProducts = products.filter(p => giftLotIds?.includes(p.lot_id));
 
-    const purchaseTotal = purchaseProducts.reduce((sum, p) => sum + (p.price * bogo.purchase_quantity), 0);
-    let giftTotal = 0;
-    if (bogo.for_type === "PERCENT_OFF") {
-      giftTotal = giftProducts.reduce((sum, p) => sum + (p.price * bogo.get_quantity * (1 - (bogo.for_discount || 0) / 100)), 0);
-    } else if (bogo.for_type === "FIXED_PRICE") {
-      giftTotal = (bogo.for_discount || 0) * bogo.get_quantity;
+    if (selectedGiftItems.length !== bogo.get_quantity) {
+      alert(`Please select ${bogo.get_quantity} gift item(s)`);
+      return;
     }
-    // FREE = 0
+
+    // ONLY selected product should be purchase item
+    const purchaseProducts = [selectedProduct];
+
+    let giftTotal = 0;
+
+    if (bogo.for_type === "PERCENT_OFF") {
+      giftTotal = selectedGiftItems.reduce(
+        (sum, p) =>
+          sum +
+          (p.price * (1 - (bogo.for_discount || 0) / 100)),
+        0
+      );
+    } else if (bogo.for_type === "FIXED_PRICE") {
+      giftTotal = selectedGiftItems.length * (bogo.for_discount || 0);
+    }
+
+    const purchaseTotal =
+      selectedProduct.price * bogo.purchase_quantity;
 
     const bogoItem = {
       isBundle: true,
       isBogo: true,
+
+      id: `bogo-${Date.now()}`,
+
       name: bogo.promotion_name || bogo.marketing_label,
-      products: [...purchaseProducts, ...giftProducts],
+
       purchaseProducts,
-      giftProducts,
+
+      giftProducts: selectedGiftItems,
+
+      products: [
+        ...purchaseProducts,
+        ...selectedGiftItems
+      ],
+
       purchase_quantity: bogo.purchase_quantity,
+
       get_quantity: bogo.get_quantity,
+
       for_type: bogo.for_type,
+
       for_discount: bogo.for_discount,
+
       same_lot: bogo.same_lot,
-      price: purchaseTotal + giftTotal,
-      id: `bogo-${Date.now()}`
+
+      price: purchaseTotal + giftTotal
     };
+
     setCart([...cart, bogoItem]);
+
+    setSelectedGiftItems([]);
+
     setShowBogoModal(null);
+
     setSelectedProduct(null);
   };
 
@@ -530,7 +562,10 @@ export const Product = ({ cart, setCart }) => {
                 const bogo = getActiveBogoPromotion(selectedProduct.lot_id);
                 return bogo ? (
                   <div
-                    onClick={() => setShowBogoModal(bogo)}
+                    onClick={() => {
+                      setSelectedGiftItems([]);
+                      setShowBogoModal(bogo);
+                    }}
                     style={{
                       background: 'linear-gradient(135deg, #9c27b0, #e040fb)',
                       color: 'white',
@@ -691,15 +726,143 @@ export const Product = ({ cart, setCart }) => {
 
                 <div style={{ background: '#e8f5e9', borderRadius: '8px', padding: '15px', marginBottom: '15px' }}>
                   <h4 style={{ margin: '0 0 10px', color: '#388e3c' }}>{getGiftHeading()}</h4>
-                  {giftItems.map(p => (
-                    <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 0', borderBottom: '1px solid #c8e6c9' }}>
-                      <img src={p.image} alt={p.name} style={{ width: '40px', height: '40px', borderRadius: '5px', objectFit: 'cover' }} />
-                      <div style={{ flex: 1 }}>
-                        <p style={{ margin: 0, fontWeight: 'bold', fontSize: '0.9rem' }}>{p.name}</p>
-                        <p style={{ margin: 0, color: '#388e3c', fontSize: '0.8rem' }}>{getGiftPriceLabel(p)}</p>
+                  <p
+                    style={{
+                      fontSize: '0.85rem',
+                      color: '#666',
+                      marginBottom: '10px'
+                    }}
+                  >
+                    Selected:
+                    {selectedGiftItems.length}
+                    /
+                    {showBogoModal.get_quantity}
+                  </p>
+                  {giftItems.map((p) => {
+                    const selectedQty = selectedGiftItems.filter(
+                      item => item.lot_id === p.lot_id
+                    ).length;
+
+                    const totalSelected = selectedGiftItems.length;
+
+                    return (
+                      <div
+                        key={p.id}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '10px',
+                          padding: '10px 0',
+                          borderBottom: '1px solid #c8e6c9'
+                        }}
+                      >
+                        <img
+                          src={p.image}
+                          alt={p.name}
+                          style={{
+                            width: '50px',
+                            height: '50px',
+                            borderRadius: '6px',
+                            objectFit: 'cover'
+                          }}
+                        />
+
+                        <div style={{ flex: 1 }}>
+                          <p
+                            style={{
+                              margin: 0,
+                              fontWeight: 'bold',
+                              fontSize: '0.95rem'
+                            }}
+                          >
+                            {p.name}
+                          </p>
+
+                          <p
+                            style={{
+                              margin: 0,
+                              color: '#388e3c',
+                              fontSize: '0.85rem'
+                            }}
+                          >
+                            {getGiftPriceLabel(p)}
+                          </p>
+                        </div>
+
+                        <div
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px'
+                          }}
+                        >
+                          <button
+                            disabled={selectedQty === 0}
+                            onClick={() => {
+                              const index = selectedGiftItems.findIndex(
+                                item => item.lot_id === p.lot_id
+                              );
+
+                              if (index > -1) {
+                                const updated = [...selectedGiftItems];
+                                updated.splice(index, 1);
+                                setSelectedGiftItems(updated);
+                              }
+                            }}
+                            style={{
+                              width: '28px',
+                              height: '28px',
+                              border: 'none',
+                              borderRadius: '50%',
+                              background: '#f44336',
+                              color: 'white',
+                              cursor: 'pointer',
+                              fontWeight: 'bold'
+                            }}
+                          >
+                            -
+                          </button>
+
+                          <span
+                            style={{
+                              minWidth: '20px',
+                              textAlign: 'center',
+                              fontWeight: 'bold'
+                            }}
+                          >
+                            {selectedQty}
+                          </span>
+
+                          <button
+                            disabled={totalSelected >= showBogoModal.get_quantity}
+                            onClick={() => {
+                              if (
+                                totalSelected <
+                                showBogoModal.get_quantity
+                              ) {
+                                setSelectedGiftItems([
+                                  ...selectedGiftItems,
+                                  p
+                                ]);
+                              }
+                            }}
+                            style={{
+                              width: '28px',
+                              height: '28px',
+                              border: 'none',
+                              borderRadius: '50%',
+                              background: '#4CAF50',
+                              color: 'white',
+                              cursor: 'pointer',
+                              fontWeight: 'bold'
+                            }}
+                          >
+                            +
+                          </button>
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
 
                 <div style={{ background: '#fff3e0', borderRadius: '8px', padding: '12px', marginBottom: '15px', textAlign: 'center' }}>
